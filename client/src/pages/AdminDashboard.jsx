@@ -14,27 +14,27 @@ const AdminDashboard = () => {
   const user = userStr ? JSON.parse(userStr) : null;
 
   const fetchUsers = async () => {
-    setLoading(true);
+    setLoading(true); setError('');
     try {
       const { data } = await axios.get('http://localhost:5000/api/admin/users', { headers: { Authorization: `Bearer ${token}` } });
       setUsers(data);
-    } catch (e) { setError('Khong tai duoc danh sach user'); } finally { setLoading(false); }
+    } catch (e) { setError('Không tải được danh sách người dùng'); } finally { setLoading(false); }
   };
 
   const fetchAuditLogs = async () => {
-    setLoading(true);
+    setLoading(true); setError('');
     try {
       const { data } = await axios.get('http://localhost:5000/api/admin/audit-logs', { headers: { Authorization: `Bearer ${token}` } });
       setAuditLogs(data);
-    } catch (e) { setError('Khong tai duoc audit logs'); } finally { setLoading(false); }
+    } catch (e) { setError('Không tải được audit logs'); } finally { setLoading(false); }
   };
 
   const fetchLoans = async () => {
-    setLoading(true);
+    setLoading(true); setError('');
     try {
       const { data } = await axios.get('http://localhost:5000/api/admin/loans', { headers: { Authorization: `Bearer ${token}` } });
       setAllLoans(data);
-    } catch (e) { setError('Khong tai duoc danh sach khoan vay'); } finally { setLoading(false); }
+    } catch (e) { setError('Không tải được danh sách khoản vay'); } finally { setLoading(false); }
   };
 
   const handleToggleStatus = async (userId, currentStatus) => {
@@ -43,7 +43,7 @@ const AdminDashboard = () => {
     try {
       await axios.put(`http://localhost:5000/api/admin/users/${userId}/status`, { status: newStatus }, { headers: { Authorization: `Bearer ${token}` } });
       fetchUsers();
-    } catch (err) { alert(err.response?.data?.message || 'Cap nhat that bai'); }
+    } catch (err) { alert(err.response?.data?.message || 'Cập nhật thất bại'); }
   };
 
   useEffect(() => {
@@ -52,91 +52,124 @@ const AdminDashboard = () => {
     else if (activeTab === 'loans') fetchLoans();
   }, [activeTab]);
 
-  const getStatusBadge = (status) => {
-    if (status === 'active') return 'bg-success-glow/10 text-success-glow border border-success-glow/30';
-    if (status === 'locked') return 'bg-danger-glow/10 text-danger-glow border border-danger-glow/30';
-    if (status === 'completed') return 'bg-success-glow/10 text-success-glow border border-success-glow/30';
-    if (status === 'closed') return 'bg-white/5 text-on-surface-variant border border-outline-variant';
-    if (status === 'defaulted') return 'bg-danger-glow/10 text-danger-glow border border-danger-glow/30';
-    return '';
-  };
-
-  const getActionBadge = (action) => {
-    if (action === 'INSERT') return <span className="text-success-glow font-label-md">INSERT</span>;
-    if (action === 'UPDATE') return <span className="text-warning-glow font-label-md">UPDATE</span>;
-    if (action === 'DELETE') return <span className="text-danger-glow font-label-md">DELETE</span>;
-    return <span className="text-on-surface-variant font-label-md">{action}</span>;
-  };
-
   const totalPrincipal = allLoans.reduce((s, l) => s + parseFloat(l.principal || 0), 0);
+  const lockedUsers = users.filter(u => u.status === 'locked').length;
 
   return (
-    <div className="max-w-5xl">
+    <div className="max-w-5xl animate-fade-in">
       {/* Header */}
-      <div className="mb-stack-lg">
-        <h1 className="font-headline-lg text-headline-lg text-on-surface">Quản trị hệ thống</h1>
-        <p className="font-body-md text-on-surface-variant mt-1">Xin chào, {user?.full_name} ({user?.role})</p>
+      <div className="mb-8">
+        <div className="flex items-center gap-2 mb-3">
+          <span
+            style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171' }}
+            className="text-[10px] font-medium px-2 py-0.5 rounded uppercase tracking-wider mono"
+          >
+            Admin
+          </span>
+        </div>
+        <h1
+          style={{ fontFamily: 'Sora, sans-serif', color: '#eef0f8', letterSpacing: '-0.025em' }}
+          className="text-2xl font-semibold mb-1"
+        >
+          Quản trị hệ thống
+        </h1>
+        <p className="text-sm text-sand-dim">Xin chào, {user?.full_name}</p>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-stack-lg">
-        <div className="glass-card py-5 px-6 text-center rounded-xl">
-          <p className="text-on-surface-variant text-label-md mb-1">Tổng Users</p>
-          <p className="font-headline-md text-headline-md text-on-surface">{users.length || '—'}</p>
-        </div>
-        <div className="glass-card py-5 px-6 text-center rounded-xl">
-          <p className="text-on-surface-variant text-label-md mb-1">Tổng Khoản Vay</p>
-          <p className="font-headline-md text-headline-md text-primary">{allLoans.length || '—'}</p>
-        </div>
-        <div className="glass-card py-5 px-6 text-center rounded-xl">
-          <p className="text-on-surface-variant text-label-md mb-1">Tổng Tiền Vay</p>
-          <p className="font-headline-md text-headline-md text-on-surface">{totalPrincipal > 0 ? '$' + totalPrincipal.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '—'}</p>
+      {/* Stats strip */}
+      <div className="card-elevated p-6 mb-8">
+        <div className="grid grid-cols-3 gap-0 divide-x divide-white/[0.06]">
+          {[
+            { label: 'Tổng người dùng', value: users.length || '—', color: '#eef0f8' },
+            { label: 'Tài khoản khóa', value: lockedUsers || '—', color: lockedUsers > 0 ? '#f87171' : '#6b7494' },
+            { label: 'Tổng khoản vay', value: allLoans.length || '—', color: '#d4aa64' },
+          ].map(({ label, value, color }, i) => (
+            <div key={label} className={`${i === 0 ? 'pr-8' : i === 1 ? 'px-8' : 'pl-8'}`}>
+              <p className="text-xs uppercase tracking-wider text-sand-dim font-medium mb-2">{label}</p>
+              <p
+                style={{ fontFamily: 'Sora, sans-serif', color, letterSpacing: '-0.03em' }}
+                className="text-3xl font-semibold"
+              >
+                {value}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 border-b border-glass-border pb-0">
-        {[{ key: 'users', label: 'Users', icon: 'group' }, { key: 'logs', label: 'Audit Logs', icon: 'history' }, { key: 'loans', label: 'Khoản Vay', icon: 'payments' }].map(tab => (
-          <button key={tab.key} onClick={() => setActiveTab(tab.key)} className={`px-5 py-2.5 text-label-md font-label-md rounded-t border-b-2 transition flex items-center gap-2 ${
-            activeTab === tab.key ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant hover:text-on-surface'}`}>
-            <span className="material-symbols-outlined text-lg">{tab.icon}</span>
+      <div className="tab-bar mb-6">
+        {[
+          { key: 'users', label: 'Người dùng', icon: 'group' },
+          { key: 'logs', label: 'Audit Logs', icon: 'history' },
+          { key: 'loans', label: 'Khoản vay', icon: 'account_balance' }
+        ].map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`tab-item ${activeTab === tab.key ? 'active' : ''}`}
+          >
+            <span
+              className="material-symbols-outlined text-base"
+              style={{ fontVariationSettings: `'FILL' ${activeTab === tab.key ? 1 : 0}, 'wght' 300, 'GRAD' 0, 'opsz' 20` }}
+            >
+              {tab.icon}
+            </span>
             {tab.label}
           </button>
         ))}
       </div>
 
+      {error && <div className="alert-error mb-5">{error}</div>}
+
       {/* Users Tab */}
       {activeTab === 'users' && (
-        <div className="glass-card rounded-xl overflow-hidden">
-          {error && <div className="bg-danger-glow/10 border border-danger-glow/30 text-danger-glow px-4 py-3 rounded-xl mb-4 text-sm">{error}</div>}
-          {loading ? <div className="text-center text-on-surface-variant py-10">Đang tải...</div> : users.length === 0 ? (
-            <div className="text-center text-on-surface-variant py-10">Chưa có user nào.</div>
+        <div className="card overflow-hidden">
+          {loading ? (
+            <div className="flex justify-center py-14"><span className="spinner" /></div>
+          ) : users.length === 0 ? (
+            <div className="py-14 text-center text-sand-dim text-sm">Chưa có người dùng nào</div>
           ) : (
-            <table className="w-full text-left">
-              <thead><tr className="border-b border-glass-border text-on-surface-variant text-label-sm">
-                <th className="px-stack-md py-3 font-medium">Username</th>
-                <th className="px-stack-md py-3 font-medium">Họ tên</th>
-                <th className="px-stack-md py-3 font-medium">Role</th>
-                <th className="px-stack-md py-3 font-medium">Trạng thái</th>
-                <th className="px-stack-md py-3 font-medium">Ngày tạo</th>
-                <th className="px-stack-md py-3 font-medium text-right">Thao tác</th>
-              </tr></thead>
-              <tbody className="divide-y divide-glass-border">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Username</th>
+                  <th>Họ tên</th>
+                  <th>Role</th>
+                  <th>Trạng thái</th>
+                  <th>Ngày tạo</th>
+                  <th style={{ textAlign: 'right' }}>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
                 {users.map(u => (
-                  <tr key={u.id} className="hover:bg-white/5 transition text-on-surface">
-                    <td className="px-stack-md py-4 font-mono text-sm">{u.username}</td>
-                    <td className="px-stack-md py-4 font-label-md">{u.full_name}</td>
-                    <td className="px-stack-md py-4">
-                      <span className={`px-2 py-0.5 text-[10px] rounded border ${
-                        u.role === 'admin' ? 'bg-tertiary-container/20 text-tertiary border-tertiary-container' : 'bg-primary/10 text-primary border-primary'}`}>
-                        {u.role.toUpperCase()}
+                  <tr key={u.id}>
+                    <td><span className="mono text-xs text-sand">{u.username}</span></td>
+                    <td><span className="text-sm text-sand">{u.full_name}</span></td>
+                    <td>
+                      <span
+                        style={{
+                          background: u.role === 'admin' ? 'rgba(239,68,68,0.08)' : 'rgba(212,170,100,0.08)',
+                          border: `1px solid ${u.role === 'admin' ? 'rgba(239,68,68,0.2)' : 'rgba(212,170,100,0.2)'}`,
+                          color: u.role === 'admin' ? '#f87171' : '#d4aa64',
+                        }}
+                        className="text-[10px] px-1.5 py-0.5 rounded mono font-medium uppercase"
+                      >
+                        {u.role}
                       </span>
                     </td>
-                    <td className="px-stack-md py-4"><span className={`px-2 py-1 text-[10px] rounded-full border ${getStatusBadge(u.status)}`}>{u.status.toUpperCase()}</span></td>
-                    <td className="px-stack-md py-4 text-label-sm text-on-surface-variant">{new Date(u.created_at).toLocaleDateString()}</td>
-                    <td className="px-stack-md py-4 text-right">
-                      <button onClick={() => handleToggleStatus(u.id, u.status)} className={`px-3 py-1 text-label-sm rounded-lg border transition cursor-pointer ${
-                        u.status === 'active' ? 'border-danger-glow/30 text-danger-glow hover:bg-danger-glow/10' : 'border-success-glow/30 text-success-glow hover:bg-success-glow/10'}`}>
+                    <td>
+                      {u.status === 'active'
+                        ? <span className="badge-success">Hoạt động</span>
+                        : <span className="badge-danger">Đã khóa</span>
+                      }
+                    </td>
+                    <td><span className="text-xs text-sand-dim">{new Date(u.created_at).toLocaleDateString('vi-VN')}</span></td>
+                    <td style={{ textAlign: 'right' }}>
+                      <button
+                        onClick={() => handleToggleStatus(u.id, u.status)}
+                        className={u.status === 'active' ? 'btn-danger text-xs py-1.5 px-3' : 'btn-secondary text-xs py-1.5 px-3'}
+                      >
                         {u.status === 'active' ? 'Khóa' : 'Mở khóa'}
                       </button>
                     </td>
@@ -150,24 +183,45 @@ const AdminDashboard = () => {
 
       {/* Audit Logs Tab */}
       {activeTab === 'logs' && (
-        <div className="glass-card rounded-xl overflow-hidden">
-          {loading ? <div className="text-center text-on-surface-variant py-10">Đang tải...</div> : auditLogs.length === 0 ? (
-            <div className="text-center text-on-surface-variant py-10">Chưa có audit log nào.</div>
+        <div className="card overflow-hidden">
+          {loading ? (
+            <div className="flex justify-center py-14"><span className="spinner" /></div>
+          ) : auditLogs.length === 0 ? (
+            <div className="py-14 text-center text-sand-dim text-sm">Chưa có audit log nào</div>
           ) : (
-            <table className="w-full text-left">
-              <thead><tr className="border-b border-glass-border text-on-surface-variant text-label-sm">
-                <th className="px-stack-md py-3 font-medium">Thời gian</th>
-                <th className="px-stack-md py-3 font-medium">Hành động</th>
-                <th className="px-stack-md py-3 font-medium">Bảng</th>
-                <th className="px-stack-md py-3 font-medium">Người thực hiện</th>
-              </tr></thead>
-              <tbody className="divide-y divide-glass-border">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Thời gian</th>
+                  <th>Hành động</th>
+                  <th>Bảng</th>
+                  <th>Người thực hiện</th>
+                </tr>
+              </thead>
+              <tbody>
                 {auditLogs.map(log => (
-                  <tr key={log.id} className="hover:bg-white/5 transition text-on-surface">
-                    <td className="px-stack-md py-4 text-label-sm text-on-surface-variant">{new Date(log.changed_at).toLocaleString()}</td>
-                    <td className="px-stack-md py-4">{getActionBadge(log.action)}</td>
-                    <td className="px-stack-md py-4"><span className="bg-surface-container px-2 py-0.5 rounded text-[10px] border border-outline-variant">{log.table_name}</span></td>
-                    <td className="px-stack-md py-4 text-on-surface-variant text-sm">{log.changed_by || '—'}</td>
+                  <tr key={log.id}>
+                    <td>
+                      <div className="text-xs text-sand">{new Date(log.changed_at).toLocaleDateString('vi-VN')}</div>
+                      <div className="text-[10px] text-sand-dim mono">{new Date(log.changed_at).toLocaleTimeString('vi-VN')}</div>
+                    </td>
+                    <td>
+                      {log.action === 'INSERT' && <span className="badge-success">INSERT</span>}
+                      {log.action === 'UPDATE' && <span className="badge-warning">UPDATE</span>}
+                      {log.action === 'DELETE' && <span className="badge-danger">DELETE</span>}
+                      {!['INSERT','UPDATE','DELETE'].includes(log.action) && (
+                        <span className="badge-neutral">{log.action}</span>
+                      )}
+                    </td>
+                    <td>
+                      <span
+                        style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.03)' }}
+                        className="text-[10px] px-1.5 py-0.5 rounded text-sand-dim mono"
+                      >
+                        {log.table_name}
+                      </span>
+                    </td>
+                    <td><span className="text-sm text-sand-dim">{log.changed_by || '—'}</span></td>
                   </tr>
                 ))}
               </tbody>
@@ -178,28 +232,43 @@ const AdminDashboard = () => {
 
       {/* Loans Tab */}
       {activeTab === 'loans' && (
-        <div className="glass-card rounded-xl overflow-hidden">
-          {loading ? <div className="text-center text-on-surface-variant py-10">Đang tải...</div> : allLoans.length === 0 ? (
-            <div className="text-center text-on-surface-variant py-10">Chưa có khoản vay nào.</div>
+        <div className="card overflow-hidden">
+          {loading ? (
+            <div className="flex justify-center py-14"><span className="spinner" /></div>
+          ) : allLoans.length === 0 ? (
+            <div className="py-14 text-center text-sand-dim text-sm">Chưa có khoản vay nào</div>
           ) : (
-            <table className="w-full text-left">
-              <thead><tr className="border-b border-glass-border text-on-surface-variant text-label-sm">
-                <th className="px-stack-md py-3 font-medium">User</th>
-                <th className="px-stack-md py-3 font-medium">Tài khoản</th>
-                <th className="px-stack-md py-3 font-medium text-right">Số tiền</th>
-                <th className="px-stack-md py-3 font-medium">Lãi suất</th>
-                <th className="px-stack-md py-3 font-medium">Kỳ hạn</th>
-                <th className="px-stack-md py-3 font-medium">Trạng thái</th>
-              </tr></thead>
-              <tbody className="divide-y divide-glass-border">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Người dùng</th>
+                  <th>Tài khoản</th>
+                  <th style={{ textAlign: 'right' }}>Số tiền</th>
+                  <th>Lãi suất</th>
+                  <th>Kỳ hạn</th>
+                  <th>Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody>
                 {allLoans.map(loan => (
-                  <tr key={loan.id} className="hover:bg-white/5 transition text-on-surface">
-                    <td className="px-stack-md py-4 text-label-md">{loan.username}</td>
-                    <td className="px-stack-md py-4 font-mono text-sm text-on-surface-variant">{loan.account_number}</td>
-                    <td className="px-stack-md py-4 text-right font-label-md text-primary">${parseFloat(loan.principal).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                    <td className="px-stack-md py-4 text-label-md">{parseFloat(loan.interest_rate).toFixed(2)}%</td>
-                    <td className="px-stack-md py-4 text-label-md">{loan.term_months} tháng</td>
-                    <td className="px-stack-md py-4"><span className={`px-2 py-1 text-[10px] rounded-full border ${getStatusBadge(loan.status)}`}>{loan.status.toUpperCase()}</span></td>
+                  <tr key={loan.id}>
+                    <td><span className="text-sm text-sand">{loan.username}</span></td>
+                    <td><span className="mono text-xs text-sand-dim">{loan.account_number}</span></td>
+                    <td style={{ textAlign: 'right' }}>
+                      <span style={{ fontFamily: 'Sora, sans-serif', color: '#d4aa64' }} className="text-sm font-semibold">
+                      ${parseFloat(loan.principal).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </td>
+                    <td><span className="text-sm text-sand">{parseFloat(loan.interest_rate).toFixed(2)}%</span></td>
+                    <td><span className="text-sm text-sand">{loan.term_months} tháng</span></td>
+                    <td>
+                      {loan.status === 'active'
+                        ? <span className="badge-success">Hoạt động</span>
+                        : loan.status === 'closed'
+                        ? <span className="badge-neutral">Đã đóng</span>
+                        : <span className="badge-danger">Quá hạn</span>
+                      }
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -168,4 +168,111 @@ const withdrawMoney = async (req, res) => {
   }
 };
 
-module.exports = { getAccounts, getTransactions, transferMoney, depositMoney, withdrawMoney };
+// @desc    Get recent transactions across all user accounts (dashboard widget)
+// @route   GET /api/accounts/recent-transactions
+// @access  Private
+const getRecentTransactions = async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT t.id, t.amount, t.status, t.reference, t.created_at,
+              tt.name AS type,
+              fa.account_number AS from_account,
+              ta.account_number AS to_account,
+              CASE
+                WHEN t.from_account_id = ANY(SELECT id FROM accounts WHERE user_id = $1) THEN 'debit'
+                ELSE 'credit'
+              END AS direction
+       FROM transactions t
+       JOIN transaction_types tt ON t.type_id = tt.id
+       LEFT JOIN accounts fa ON fa.id = t.from_account_id
+       LEFT JOIN accounts ta ON ta.id = t.to_account_id
+       WHERE t.from_account_id IN (SELECT id FROM accounts WHERE user_id = $1)
+          OR t.to_account_id   IN (SELECT id FROM accounts WHERE user_id = $1)
+       ORDER BY t.created_at DESC
+       LIMIT 5`,
+      [req.user.id]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('getRecentTransactions error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+// @desc    Get monthly income/expense summary + 6-month cashflow data
+// @route   GET /api/accounts/summary
+// @access  Private
+const getSummary = async (req, res) => {
+  // Vietnamese abbreviated month names
+  const VI_MONTHS = ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12'];
+
+  try {
+    // Current month income (credit to user accounts)
+    const incomeRes = await pool.query(
+      `SELECT COALESCE(SUM(t.amount), 0) AS total
+       FROM transactions t
+       WHERE t.to_account_id IN (SELECT id FROM accounts WHERE user_id = $1)
+         AND t.status = 'completed'
+         AND DATE_TRUNC('month', t.created_at) = DATE_TRUNC('month', NOW())`,
+      [req.user.id]
+    );
+
+    // Current month expense (debit from user accounts)
+    const expenseRes = await pool.query(
+      `SELECT COALESCE(SUM(t.amount), 0) AS total
+       FROM transactions t
+       WHERE t.from_account_id IN (SELECT id FROM accounts WHERE user_id = $1)
+         AND t.status = 'completed'
+         AND DATE_TRUNC('month', t.created_at) = DATE_TRUNC('month', NOW())`,
+      [req.user.id]
+    );
+
+    // 6-month cashflow — use EXTRACT to get month number reliably
+    const cashflowRes = await pool.query(
+      `SELECT
+         EXTRACT(MONTH FROM DATE_TRUNC('month', t.created_at))::int AS month_num,
+         EXTRACT(YEAR  FROM DATE_TRUNC('month', t.created_at))::int AS year_num,
+         DATE_TRUNC('month', t.created_at) AS month_date,
+         COALESCE(SUM(CASE WHEN t.to_account_id   IN (SELECT id FROM accounts WHERE user_id = $1) THEN t.amount ELSE 0 END), 0) AS income,
+         COALESCE(SUM(CASE WHEN t.from_account_id IN (SELECT id FROM accounts WHERE user_id = $1) THEN t.amount ELSE 0 END), 0) AS expense
+       FROM transactions t
+       WHERE t.status = 'completed'
+         AND t.created_at >= NOW() - INTERVAL '6 months'
+         AND (
+           t.to_account_id   IN (SELECT id FROM accounts WHERE user_id = $1) OR
+           t.from_account_id IN (SELECT id FROM accounts WHERE user_id = $1)
+         )
+       GROUP BY DATE_TRUNC('month', t.created_at)
+       ORDER BY month_date ASC`,
+      [req.user.id]
+    );
+
+    // Build a full 6-month series (fill months with no data as 0)
+    const now = new Date();
+    const fullSeries = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const mNum = d.getMonth() + 1; // 1-12
+      const yNum = d.getFullYear();
+      const found = cashflowRes.rows.find(
+        r => r.month_num === mNum && r.year_num === yNum
+      );
+      fullSeries.push({
+        month:  VI_MONTHS[mNum - 1],
+        income:  found ? parseFloat(found.income)  : 0,
+        actual:  found ? parseFloat(found.expense) : 0,
+      });
+    }
+
+    res.json({
+      monthlyIncome:  parseFloat(incomeRes.rows[0].total),
+      monthlyExpense: parseFloat(expenseRes.rows[0].total),
+      cashflow: fullSeries,
+    });
+  } catch (error) {
+    console.error('getSummary error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+module.exports = { getAccounts, getTransactions, transferMoney, depositMoney, withdrawMoney, getRecentTransactions, getSummary };

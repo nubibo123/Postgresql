@@ -24,13 +24,22 @@ const AdminRoute = ({ children }) => {
   return user?.role === 'admin' ? children : <Navigate to="/" />;
 };
 
+const AuthLayout = () => (
+  <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden" style={{ background: '#060810' }}>
+    <Outlet />
+  </div>
+);
+
 const AppLayout = () => {
   const token = localStorage.getItem('token');
   return (
     <>
       {token && <Sidebar />}
-      <main className={`flex-1 min-h-screen bg-obsidian-deep ${token ? 'lg:ml-64 pt-16' : ''}`}>
-        <div className="max-w-container-max mx-auto p-margin-mobile md:p-margin-desktop space-y-stack-lg">
+      <main
+        className={`min-h-screen ${token ? 'lg:ml-60 pt-14 lg:pt-0' : ''}`}
+        style={{ background: '#060810' }}
+      >
+        <div className="max-w-6xl mx-auto px-5 py-8 lg:px-10 lg:py-10">
           <Outlet />
         </div>
       </main>
@@ -41,21 +50,21 @@ const AppLayout = () => {
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-obsidian-deep flex flex-col">
-        <Routes>
-          <Route element={<AppLayout />}>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-            <Route path="/deposit" element={<PrivateRoute><Deposit /></PrivateRoute>} />
-            <Route path="/withdraw" element={<PrivateRoute><Withdraw /></PrivateRoute>} />
-            <Route path="/transfer" element={<PrivateRoute><Transfer /></PrivateRoute>} />
-            <Route path="/history" element={<PrivateRoute><History /></PrivateRoute>} />
-            <Route path="/loan" element={<PrivateRoute><Loan /></PrivateRoute>} />
-            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-          </Route>
-        </Routes>
-      </div>
+      <Routes>
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+        </Route>
+        <Route element={<AppLayout />}>
+          <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+          <Route path="/deposit" element={<PrivateRoute><Deposit /></PrivateRoute>} />
+          <Route path="/withdraw" element={<PrivateRoute><Withdraw /></PrivateRoute>} />
+          <Route path="/transfer" element={<PrivateRoute><Transfer /></PrivateRoute>} />
+          <Route path="/history" element={<PrivateRoute><History /></PrivateRoute>} />
+          <Route path="/loan" element={<PrivateRoute><Loan /></PrivateRoute>} />
+          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+        </Route>
+      </Routes>
     </Router>
   );
 }

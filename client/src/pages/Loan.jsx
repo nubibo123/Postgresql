@@ -57,101 +57,228 @@ const Loan = () => {
     } catch (err) { alert(err.response?.data?.message || 'Xóa không thành công'); }
   };
 
-  const getStatusBadge = (status) => {
-    if (status === 'active') return 'bg-success-glow/10 text-success-glow border border-success-glow/30';
-    if (status === 'closed') return 'bg-white/5 text-on-surface-variant border border-outline-variant';
-    return 'bg-danger-glow/10 text-danger-glow border border-danger-glow/30';
-  };
+  const activeLoans = loans.filter(l => l.status === 'active');
+  const totalPrincipal = activeLoans.reduce((s, l) => s + parseFloat(l.principal || 0), 0);
 
   return (
-    <div className="max-w-5xl">
-      <div className="flex justify-between items-center mb-stack-lg">
-        <h1 className="font-headline-lg text-headline-lg text-on-surface">Khoản vay của tôi</h1>
-        <button onClick={() => setShowForm(!showForm)} className={`btn-primary px-6 ${showForm ? 'bg-surface-container hover:opacity-80' : ''}`}>
-          <span className="material-symbols-outlined mr-1">{showForm ? 'close' : 'add'}</span>
+    <div className="max-w-5xl animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+          <h1
+            style={{ fontFamily: 'Sora, sans-serif', color: '#eef0f8', letterSpacing: '-0.025em' }}
+            className="text-2xl font-semibold mb-1"
+          >
+            Khoản vay
+          </h1>
+          <p className="text-sm text-sand-dim">Quản lý các khoản vay của bạn</p>
+        </div>
+        <button
+          onClick={() => { setShowForm(!showForm); setError(''); setSuccess(''); }}
+          className={showForm ? 'btn-secondary flex items-center gap-2 text-sm' : 'btn-primary flex items-center gap-2 text-sm'}
+        >
+          <span
+            className="material-symbols-outlined text-base"
+            style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}
+          >
+            {showForm ? 'close' : 'add'}
+          </span>
           {showForm ? 'Hủy' : 'Đăng ký vay'}
         </button>
       </div>
 
-      {error && <div className="bg-danger-glow/10 border border-danger-glow/30 text-danger-glow px-4 py-3 rounded-xl mb-6 text-sm">{error}</div>}
-      {success && <div className="bg-success-glow/10 border border-success-glow/30 text-success-glow px-4 py-3 rounded-xl mb-6 text-sm">{success}</div>}
+      {/* Alerts */}
+      {error && <div className="alert-error mb-5">{error}</div>}
+      {success && (
+        <div className="alert-success mb-5 flex items-center gap-2">
+          <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400" }}>check_circle</span>
+          {success}
+        </div>
+      )}
 
+      {/* Loan form */}
       {showForm && (
-        <div className="glass-card p-stack-lg rounded-2xl mb-stack-lg">
-          <h2 className="font-headline-md text-headline-md text-on-surface mb-6">Đơn đăng ký vay</h2>
+        <div className="card p-6 mb-8 animate-slide-up" style={{ borderColor: 'rgba(212,170,100,0.15)' }}>
+          <h2
+            style={{ fontFamily: 'Sora, sans-serif', color: '#eef0f8', letterSpacing: '-0.02em' }}
+            className="text-base font-semibold mb-6"
+          >
+            Đơn đăng ký vay
+          </h2>
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-on-surface-variant text-label-md mb-2">Tài khoản liên kết</label>
+              <label className="block text-xs font-medium text-sand-dim mb-1.5 uppercase tracking-wider">
+                Tài khoản liên kết
+              </label>
               <select name="accountId" value={formData.accountId} onChange={handleChange} className="input-field" required>
-                {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.account_number} — ${parseFloat(acc.balance).toFixed(2)}</option>)}
+                {accounts.map(acc => (
+                  <option key={acc.id} value={acc.id}>
+                    {acc.account_number} — ${parseFloat(acc.balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </option>
+                ))}
               </select>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-on-surface-variant text-label-md mb-2">Số tiền vay (USD)</label>
+                <label className="block text-xs font-medium text-sand-dim mb-1.5 uppercase tracking-wider">
+                  Số tiền vay
+                </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-on-surface-variant">$</span>
-                  <input type="number" name="principal" value={formData.principal} onChange={handleChange} className="input-field pl-8" placeholder="10000" step="0.01" min="0.01" required />
+                  <input
+                    type="number"
+                    name="principal"
+                    value={formData.principal}
+                    onChange={handleChange}
+                    className="input-field pr-14"
+                    placeholder="100"
+                    step="0.01"
+                    min="0.01"
+                    required
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-sand-dim mono pointer-events-none">$</span>
                 </div>
               </div>
               <div>
-                <label className="block text-on-surface-variant text-label-md mb-2">Lãi suất (%)</label>
+                <label className="block text-xs font-medium text-sand-dim mb-1.5 uppercase tracking-wider">
+                  Lãi suất
+                </label>
                 <div className="relative">
-                  <input type="number" name="interestRate" value={formData.interestRate} onChange={handleChange} className="input-field pr-8" placeholder="5.5" step="0.01" min="0" required />
-                  <span className="absolute inset-y-0 right-0 pr-4 flex items-center text-on-surface-variant">%</span>
+                  <input
+                    type="number"
+                    name="interestRate"
+                    value={formData.interestRate}
+                    onChange={handleChange}
+                    className="input-field pr-8"
+                    placeholder="5.5"
+                    step="0.01"
+                    min="0"
+                    required
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-sand-dim pointer-events-none">%</span>
                 </div>
               </div>
               <div>
-                <label className="block text-on-surface-variant text-label-md mb-2">Kỳ hạn (tháng)</label>
-                <input type="number" name="termMonths" value={formData.termMonths} onChange={handleChange} className="input-field" placeholder="12" min="1" required />
+                <label className="block text-xs font-medium text-sand-dim mb-1.5 uppercase tracking-wider">
+                  Kỳ hạn (tháng)
+                </label>
+                <input
+                  type="number"
+                  name="termMonths"
+                  value={formData.termMonths}
+                  onChange={handleChange}
+                  className="input-field"
+                  placeholder="12"
+                  min="1"
+                  required
+                />
               </div>
             </div>
+
             <div>
-              <label className="block text-on-surface-variant text-label-md mb-2">Ngày bắt đầu</label>
-              <input type="date" name="startDate" value={formData.startDate} onChange={handleChange} className="input-field" required />
+              <label className="block text-xs font-medium text-sand-dim mb-1.5 uppercase tracking-wider">
+                Ngày bắt đầu
+              </label>
+              <input
+                type="date"
+                name="startDate"
+                value={formData.startDate}
+                onChange={handleChange}
+                className="input-field"
+                required
+              />
             </div>
-            <button type="submit" className="btn-primary w-full mt-2" disabled={accounts.length === 0}>
-              <span className="material-symbols-outlined mr-1">check</span>
+
+            <button
+              type="submit"
+              className="btn-primary flex items-center gap-2"
+              disabled={accounts.length === 0}
+            >
+              <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>check</span>
               Gửi đơn đăng ký
             </button>
           </form>
         </div>
       )}
 
+      {/* Summary stats */}
+      {loans.length > 0 && (
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          {[
+            { label: 'Tổng khoản vay', value: loans.length, color: '#eef0f8' },
+            { label: 'Đang hoạt động', value: activeLoans.length, color: '#34d399' },
+            { label: 'Tổng nợ gốc', value: totalPrincipal > 0 ? '$' + totalPrincipal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—', color: '#d4aa64' },
+          ].map(({ label, value, color }) => (
+            <div key={label} className="card p-5">
+              <p className="text-xs text-sand-dim uppercase tracking-wider font-medium mb-2">{label}</p>
+              <p style={{ fontFamily: 'Sora, sans-serif', color, letterSpacing: '-0.02em' }} className="text-xl font-semibold">
+                {value}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Loans list */}
       {loading ? (
-        <div className="text-center text-on-surface-variant py-10">Đang tải...</div>
+        <div className="card flex justify-center py-14">
+          <span className="spinner" />
+        </div>
       ) : loans.length === 0 ? (
-        <div className="glass-card p-stack-lg rounded-2xl text-center">
-          <span className="material-symbols-outlined text-4xl text-on-surface-variant mb-3">payments</span>
-          <p className="text-on-surface-variant mb-2">Chưa có khoản vay nào.</p>
-          <p className="text-on-surface-variant text-sm">Đăng ký khoản vay bằng nút bên trên.</p>
+        <div className="card p-12 text-center">
+          <span
+            className="material-symbols-outlined text-3xl text-sand-dim block mb-3"
+            style={{ fontVariationSettings: "'FILL' 0, 'wght' 200" }}
+          >
+            account_balance
+          </span>
+          <p className="text-sand-dim text-sm mb-1">Chưa có khoản vay nào</p>
+          <p className="text-xs text-sand-muted">Nhấn "Đăng ký vay" để tạo khoản vay đầu tiên</p>
         </div>
       ) : (
-        <div className="glass-card rounded-xl overflow-hidden">
-          <table className="w-full text-left">
-            <thead><tr className="border-b border-glass-border text-on-surface-variant text-label-sm">
-              <th className="px-stack-md py-3 font-medium">Tài khoản</th>
-              <th className="px-stack-md py-3 font-medium text-right">Số tiền</th>
-              <th className="px-stack-md py-3 font-medium">Lãi suất</th>
-              <th className="px-stack-md py-3 font-medium">Kỳ hạn</th>
-              <th className="px-stack-md py-3 font-medium">Bắt đầu</th>
-              <th className="px-stack-md py-3 font-medium">Kết thúc</th>
-              <th className="px-stack-md py-3 font-medium">Trạng thái</th>
-              <th className="px-stack-md py-3 font-medium"></th>
-            </tr></thead>
-            <tbody className="divide-y divide-glass-border">
+        <div className="card overflow-hidden">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Tài khoản</th>
+                <th style={{ textAlign: 'right' }}>Số tiền</th>
+                <th>Lãi suất</th>
+                <th>Kỳ hạn</th>
+                <th>Bắt đầu</th>
+                <th>Kết thúc</th>
+                <th>Trạng thái</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
               {loans.map(loan => (
-                <tr key={loan.id} className="hover:bg-white/5 transition text-on-surface">
-                  <td className="px-stack-md py-4 font-mono text-sm">{loan.account_number || loan.account_id?.slice(0, 8)}</td>
-                  <td className="px-stack-md py-4 text-right font-label-md text-primary">${parseFloat(loan.principal).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                  <td className="px-stack-md py-4 text-label-md">{parseFloat(loan.interest_rate).toFixed(2)}%</td>
-                  <td className="px-stack-md py-4 text-label-md">{loan.term_months} tháng</td>
-                  <td className="px-stack-md py-4 text-label-sm text-on-surface-variant">{new Date(loan.start_date).toLocaleDateString()}</td>
-                  <td className="px-stack-md py-4 text-label-sm text-on-surface-variant">{new Date(loan.end_date).toLocaleDateString()}</td>
-                  <td className="px-stack-md py-4"><span className={`px-2 py-1 text-[10px] rounded-full border ${getStatusBadge(loan.status)}`}>{loan.status.toUpperCase()}</span></td>
-                  <td className="px-stack-md py-4">
-                    <button onClick={() => handleDelete(loan.id)} className="text-danger-glow hover:text-danger-glow/70 text-sm transition cursor-pointer">
-                      <span className="material-symbols-outlined text-lg">delete</span>
+                <tr key={loan.id}>
+                  <td><span className="mono text-xs text-sand">{loan.account_number || loan.account_id?.slice(0, 8)}</span></td>
+                  <td style={{ textAlign: 'right' }}>
+                    <span style={{ fontFamily: 'Sora, sans-serif', color: '#d4aa64' }} className="text-sm font-semibold">
+                      ${parseFloat(loan.principal).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </td>
+                  <td><span className="text-sm text-sand">{parseFloat(loan.interest_rate).toFixed(2)}%</span></td>
+                  <td><span className="text-sm text-sand">{loan.term_months} tháng</span></td>
+                  <td><span className="text-xs text-sand-dim">{new Date(loan.start_date).toLocaleDateString('vi-VN')}</span></td>
+                  <td><span className="text-xs text-sand-dim">{new Date(loan.end_date).toLocaleDateString('vi-VN')}</span></td>
+                  <td>
+                    {loan.status === 'active'
+                      ? <span className="badge-success">Hoạt động</span>
+                      : loan.status === 'closed'
+                      ? <span className="badge-neutral">Đã đóng</span>
+                      : <span className="badge-danger">Quá hạn</span>
+                    }
+                  </td>
+                  <td>
+                    <button
+                      onClick={() => handleDelete(loan.id)}
+                      className="text-sand-muted hover:text-danger transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 0, 'wght' 300" }}>
+                        delete
+                      </span>
                     </button>
                   </td>
                 </tr>
