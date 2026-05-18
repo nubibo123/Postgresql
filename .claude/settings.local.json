@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(psql -U postgres -d securebank -c \"CREATE TABLE loans \\( id UUID PRIMARY KEY DEFAULT gen_random_uuid\\(\\), user_id UUID REFERENCES users\\(id\\) ON DELETE RESTRICT, account_id UUID REFERENCES accounts\\(id\\) ON DELETE RESTRICT, principal NUMERIC\\(15,2\\) NOT NULL CHECK \\(principal > 0\\), interest_rate NUMERIC\\(5,2\\) NOT NULL CHECK \\(interest_rate >= 0\\), term_months INTEGER NOT NULL CHECK \\(term_months > 0\\), start_date DATE NOT NULL, end_date DATE NOT NULL, status VARCHAR\\(20\\) DEFAULT 'active' CHECK \\(status IN \\('active','closed','defaulted'\\)\\), created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP \\);\")",
+      "Bash(Get-Command psql *)",
+      "Bash(Select-Object -ExpandProperty Source)",
+      "Bash(node -e ' *)",
+      "Bash(npm install *)",
+      "Bash(node fix_procs.js)"
+    ]
+  }
+}
