@@ -7,6 +7,10 @@ const authRoutes = require('./routes/authRoutes');
 const accountRoutes = require('./routes/accountRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const loanRoutes = require('./routes/loanRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const cardRoutes = require('./routes/cardRoutes');
+const billRoutes = require('./routes/billRoutes');
+const scheduledRoutes = require('./routes/scheduledRoutes');
 
 const app = express();
 
@@ -21,6 +25,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/accounts', accountRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/loans', loanRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/cards', cardRoutes);
+app.use('/api/bills', billRoutes);
+app.use('/api/scheduled', scheduledRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

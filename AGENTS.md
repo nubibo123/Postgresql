@@ -1,127 +1,126 @@
-# SecureBank - Banking Transaction System
+# AGENTS.md — SecureBank
 
-## Giới thiệu
+## Repo layout
 
-SecureBank là hệ thống giao dịch ngân hàng đơn giản được xây dựng bằng PostgreSQL nhằm mô phỏng các chức năng cơ bản của Internet Banking.
+Two co-located packages, **not** a monorepo:
 
-Dự án phục vụ cho báo cáo cuối kỳ môn PostgreSQL với các kỹ thuật:
-- Database Design
-- ERD
-- Transaction Management
-- Security Management
-- Backup & Restore
-- PITR (Point In Time Recovery)
+```
+Postgres/
+├── server/    # Node.js + Express API (port 5000)
+├── client/    # React 19 + Vite (port 5173)
+└── database/  # PostgreSQL init scripts
+```
 
----
-
-# Công nghệ sử dụng
-
-## Backend
-- Node.js
-- Express.js
-
-## Frontend
-- ReactJS / HTML CSS JavaScript
-
-## Database
-- PostgreSQL
+`CLAUDE.md` and `docs/architecture.md` exist and are more detailed than this file. Trust them first.
 
 ---
 
-# Chức năng chính
+## Commands
 
-## Người dùng
-- Đăng ký tài khoản
-- Đăng nhập
-- Xem số dư
-- Chuyển tiền
-- Xem lịch sử giao dịch
+### Database (run every fresh setup, in order)
 
-## Quản trị viên
-- Quản lý tài khoản
-- Khóa tài khoản
-- Xem audit logs
-- Backup hệ thống
+```bash
+psql -U postgres -c "CREATE DATABASE securebank;"
+psql -U postgres -d securebank -f database/01_schema.sql
+psql -U postgres -d securebank -f database/02_security.sql
+psql -U postgres -d securebank -f database/03_functions_triggers.sql
+```
 
----
+Seed demo data (optional): `psql -U postgres -d securebank -f database/05_seed_transactions.sql`
 
-# PostgreSQL Features
+### Start both services (two terminals)
 
-## Transaction Management
-- ACID transaction
-- COMMIT / ROLLBACK
-- Concurrent transaction handling
-- Row locking với FOR UPDATE
+```bash
+# Terminal 1 — Backend
+cd server && npm install && npm run dev     # port 5000
 
-## Security
-- Roles & Permissions
-- Password hashing
-- Audit logging
-- Row-level security
+# Terminal 2 — Frontend
+cd client && npm install && npm run dev     # port 5173
+```
 
-## Backup & Recovery
-- pg_dump
-- pg_restore
-- WAL Archiving
-- PITR (Point In Time Recovery)
+### No tests or build step in this repo
+
+`npm test` is not defined anywhere. Frontend build: `cd client && npm run build`.
 
 ---
 
-# Database Schema
+## Entry points
 
-## Tables
-
-### users
-Lưu thông tin người dùng.
-
-### accounts
-Lưu tài khoản ngân hàng và số dư.
-
-### transactions
-Lưu lịch sử giao dịch.
-
-### transaction_types
-Danh sách loại giao dịch.
-
-### roles
-Phân quyền người dùng.
-
-### user_roles
-Liên kết user và role.
-
-### audit_logs
-Lưu lịch sử thao tác hệ thống.
-
-### login_history
-Lưu lịch sử đăng nhập.
+| Layer | File |
+|---|---|
+| Backend | `server/src/index.js` |
+| DB pool | `server/src/config/db.js` |
+| Frontend | `client/src/main.jsx` → `App.jsx` |
 
 ---
 
-# ERD
+## Environment
 
-```text
-USERS
-  |
-  | 1-N
-  |
-ACCOUNTS
-  |
-  | 1-N
-  |
-TRANSACTIONS
-  |
-  | N-1
-  |
-TRANSACTION_TYPES
+- **Backend**: `server/.env` only. Contains `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`, `DB_NAME`, `JWT_SECRET`, `PORT`. Client ignores `.env` by default (Vite doesn't read `server/.env`).
+- Changing any `server/.env` value requires restarting the backend.
 
-USERS
-  |
-  | N-N
-  |
-ROLES
+---
 
-USERS
-  |
-  | 1-N
-  |
-AUDIT_LOGS
+## Auth & Routing
+
+- JWT expires in **30 days** (`jsonwebtoken` expiry set in `authController.js`).
+- Password hash: **bcrypt salt rounds = 10**.
+- Frontend guards: `PrivateRoute` (token check via `localStorage`) and `AdminRoute` (role check).
+- All API requests from client use `axios` with `Authorization: Bearer <token>`.
+
+---
+
+## PostgreSQL quirks (critical)
+
+### Stored procedures — no COMMIT/ROLLBACK
+
+`sp_transfer_money`, `sp_deposit_money`, `sp_withdraw_money` have **no COMMIT/ROLLBACK** inside. PostgreSQL auto-commits when `CALL` completes. Adding any explicit COMMIT inside the procedure body will fail. Validation errors use `RETURN` only; exceptions re-raise via `RAISE`.
+
+### RLS + audit context — must set per request
+
+`02_security.sql` enables RLS on `accounts` and `transactions`, scoped to `current_setting('app.current_user_id')::UUID`. Every controller must run a query like:
+
+```sql
+SET LOCAL app.current_user_id = '<authenticated-user-uuid>';
+```
+
+before touching data, otherwise RLS blocks the query.
+
+### Concurrency — deadlock prevention
+
+`sp_transfer_money` locks both rows with `FOR UPDATE`, always in **UUID ascending order** (smaller UUID first), to prevent deadlocks from concurrent transfers.
+
+---
+
+## Key API routes
+
+| Method | Endpoint | Auth |
+|---|---|---|
+| POST | `/api/auth/register` | none |
+| POST | `/api/auth/login` | none |
+| GET | `/api/accounts` | JWT |
+| POST | `/api/accounts/deposit` | JWT |
+| POST | `/api/accounts/withdraw` | JWT |
+| POST | `/api/accounts/transfer` | JWT |
+| GET | `/api/admin/users` | JWT + admin role |
+| GET | `/api/admin/logs` | JWT + admin role |
+
+Load-bearing file: `server/src/controllers/accountController.js` — deposit/withdraw/transfer controllers delegate to the stored procedures above.
+
+---
+
+## Admin account
+
+Username: `admin` / `admin123` (hardcoded in CLIENT.md and docs).
+
+---
+
+## Lint / typecheck
+
+Frontend only: `cd client && npm run lint` (ESLint). No backend lint. No typecheck step — this is a JS project, no TypeScript.
+
+---
+
+## Directories NOT in this repo worth knowing
+
+`.kilo/` — Kilo tooling. Local OpenCode config not found (`opencode.json` absent). No `.cursor/rules/` or `.github/copilot-instructions.md`.

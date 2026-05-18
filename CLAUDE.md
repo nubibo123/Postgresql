@@ -22,7 +22,10 @@ psql -U postgres -c "CREATE DATABASE securebank;"
 psql -U postgres -d securebank -f database/01_schema.sql
 psql -U postgres -d securebank -f database/02_security.sql
 psql -U postgres -d securebank -f database/03_functions_triggers.sql
+psql -U postgres -d securebank -f database/05_seed_all.sql   # seed users, accounts, transactions, loans, notifications, sessions, cards, bill_payments, scheduled_payments
 ```
+**Test credentials:** `user1` – `password123` (đến `user10`). Admin: `admin` / `password123`. Default password hash: `$2b$10$i0qk9dN6drBtJ3a/tG4QzeLc5TuTR83Vbg/TXdtWAHalmTfvxRun2`
+
 See `database/04_backup_pitr_guide.md` for pg_dump/pg_restore and PITR procedures.
 
 ### End-to-End Setup
@@ -53,12 +56,24 @@ DATABASE (PostgreSQL)                   → :5432, DB: securebank
   - `controllers/accountController.js` – account listing, deposit/withdraw/transfer (delegates to stored procedures).
   - `controllers/loanController.js` – loans: list, apply, update status, delete.
   - `controllers/adminController.js` – admin endpoints (users with lock/unlock, audit logs, all loans).
-  - Routes: `server/src/routes/` — authRoutes, accountRoutes, adminRoutes, loanRoutes
+  - `controllers/notificationController.js` – notifications: list, mark read, delete.
+  - `controllers/cardController.js` – cards: list, create (virtual/debit), block/unblock, cancel.
+  - `controllers/billController.js` – bill payments: list, pay bill.
+  - `controllers/scheduledController.js` – scheduled payments: list, create, update, cancel.
+  - Routes: `server/src/routes/` — authRoutes, accountRoutes, adminRoutes, loanRoutes, notificationRoutes, cardRoutes, billRoutes, scheduledRoutes
 - Auth: `POST /api/auth/register`, `POST /api/auth/login` → `{ id, username, full_name, role, token }`
 - Error middleware in `server/src/middlewares/errorMiddleware.js` produces `{ message }` responses.
 
+### New API Routes (v2)
+| Route | Methods | Description |
+|-------|---------|-------------|
+| `/api/notifications` | GET, PUT /read-all, PUT /:id/read, DELETE /:id | Notifications |
+| `/api/cards` | GET, POST, GET /:id, PUT /:id/status, DELETE /:id | Cards (debit/virtual) |
+| `/api/bills` | GET, POST, GET /:id | Bill payments |
+| `/api/scheduled` | GET, POST, PUT /:id, DELETE /:id | Scheduled payments |
+
 ### Database
-**Tables:** `users`, `accounts`, `transactions`, `transaction_types`, `roles`, `user_roles`, `audit_logs`, `login_history`, `loans`
+**Tables:** `users`, `accounts`, `transactions`, `transaction_types`, `roles`, `user_roles`, `audit_logs`, `login_history`, `loans`, `notifications`, `sessions`, `cards`, `bill_payments`, `scheduled_payments`
 
 **Stored procedures** (`database/03_functions_triggers.sql`):
 > **Note:** Procedures do NOT use `COMMIT`/`ROLLBACK` inside. PostgreSQL auto-commits when `CALL` completes. Validation gates use `RETURN` only. Exception handler uses `RAISE` (PostgreSQL auto-rollbacks).
@@ -93,6 +108,10 @@ DATABASE (PostgreSQL)                   → :5432, DB: securebank
 | History: Transactions + Loans tabs | `History.jsx` |
 | Admin: Users, Audit Logs, Loans | `AdminDashboard.jsx` + `adminController` |
 | Lock/Unlock user account | `adminController.updateUserStatus` |
+| Notifications (list, read, delete) | `notificationController`, notificationRoutes |
+| Cards (debit/virtual, block/unblock) | `cardController`, cardRoutes |
+| Bill payments | `billController`, billRoutes |
+| Scheduled payments | `scheduledController`, scheduledRoutes |
 
 ## Entry Points
 - `server/src/index.js`
