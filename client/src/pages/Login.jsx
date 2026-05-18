@@ -23,22 +23,36 @@ const Login = () => {
       localStorage.setItem('user', JSON.stringify(data));
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      setError(err.response?.data?.message || 'Đăng nhập thất bại');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex justify-center items-center h-[calc(100vh-120px)]">
-      <div className="card w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center text-white">Welcome Back</h2>
-        
-        {error && <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded mb-4 text-sm">{error}</div>}
+    <div className="flex justify-center items-center min-h-[calc(100vh-64px)] bg-obsidian-deep relative overflow-hidden">
+      {/* Background glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-3xl pointer-events-none" />
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="glass-card w-full max-w-md p-stack-lg rounded-2xl relative z-10">
+        {/* Logo */}
+        <div className="text-center mb-stack-lg">
+          <div className="w-12 h-12 rounded-full bg-primary/20 mx-auto flex items-center justify-center mb-3">
+            <span className="material-symbols-outlined text-primary text-2xl">account_balance</span>
+          </div>
+          <h2 className="font-headline-lg text-headline-lg text-on-surface">Chào mừng trở lại</h2>
+          <p className="font-body-md text-on-surface-variant mt-2">Đăng nhập vào SecureBank</p>
+        </div>
+
+        {error && (
+          <div className="bg-danger-glow/10 border border-danger-glow/30 text-danger-glow px-4 py-3 rounded-xl mb-6 text-sm font-label-md">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-gray-400 text-sm font-medium mb-1">Username</label>
+            <label className="block text-on-surface-variant text-label-md font-label-md mb-2">Tên đăng nhập</label>
             <input
               type="text"
               name="username"
@@ -46,11 +60,11 @@ const Login = () => {
               onChange={handleChange}
               className="input-field"
               required
-              placeholder="Enter your username"
+              placeholder="Nhập tên đăng nhập"
             />
           </div>
           <div>
-            <label className="block text-gray-400 text-sm font-medium mb-1">Password</label>
+            <label className="block text-on-surface-variant text-label-md font-label-md mb-2">Mật khẩu</label>
             <input
               type="password"
               name="password"
@@ -58,20 +72,34 @@ const Login = () => {
               onChange={handleChange}
               className="input-field"
               required
-              placeholder="••••••••"
+              placeholder="Nhập mật khẩu"
             />
           </div>
-          <button 
-            type="submit" 
-            className="btn-primary w-full mt-2 flex justify-center items-center"
+
+          <button
+            type="submit"
+            className="btn-primary w-full flex justify-center items-center gap-2"
             disabled={loading}
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? (
+              <>
+                <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                Đang đăng nhập...
+              </>
+            ) : (
+              <>
+                <span className="material-symbols-outlined">login</span>
+                Đăng nhập
+              </>
+            )}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-400">
-          Don't have an account? <Link to="/register" className="text-brand-accent hover:underline">Sign up</Link>
+        <p className="mt-6 text-center font-body-md text-on-surface-variant">
+          Chưa có tài khoản?{' '}
+          <Link to="/register" className="text-primary hover:text-primary/80 font-medium transition-colors">
+            Đăng ký ngay
+          </Link>
         </p>
       </div>
     </div>

@@ -26,80 +26,52 @@ const QRCodeModal = ({ accountNumber, virtualAccount, onClose }) => {
   const handleDownload = () => {
     const canvas = canvasRef.current?.querySelector('canvas');
     if (!canvas) return;
-    const url = canvas.toDataURL('image/png');
     const link = document.createElement('a');
     link.download = `securebank-qr-${accountNumber}.png`;
-    link.href = url;
+    link.href = canvas.toDataURL('image/png');
     link.click();
   };
 
   return (
-    <div
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-      onClick={handleBackdropClick}
-    >
-      <div ref={modalRef} className="card w-full max-w-sm text-center relative">
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 text-gray-400 hover:text-white transition text-xl leading-none w-8 h-8 flex items-center justify-center rounded hover:bg-gray-800"
-          aria-label="Close"
-        >
-          ✕
+    <div className="fixed inset-0 bg-obsidian-deep/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={handleBackdropClick}>
+      <div ref={modalRef} className="glass-card w-full max-w-sm text-center relative rounded-2xl p-stack-lg">
+        {/* Close */}
+        <button onClick={onClose} className="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface transition text-xl leading-none w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5" aria-label="Đóng">
+          <span className="material-symbols-outlined">close</span>
         </button>
 
-        {/* Bank header */}
+        {/* Header */}
         <div className="mb-6">
-          <div className="w-12 h-12 rounded-full bg-brand-accent mx-auto flex items-center justify-center mb-3">
-            <span className="text-white font-bold text-sm">SB</span>
+          <div className="w-12 h-12 rounded-full bg-primary/20 mx-auto flex items-center justify-center mb-3">
+            <span className="material-symbols-outlined text-primary text-2xl">account_balance</span>
           </div>
-          <h2 className="text-white font-bold text-lg">SecureBank</h2>
-          <p className="text-gray-500 text-sm mt-1">Scan to transfer</p>
+          <h2 className="text-on-surface font-headline-md text-headline-md font-bold">SecureBank</h2>
+          <p className="text-on-surface-variant text-sm mt-1">Quét mã để chuyển tiền</p>
         </div>
 
         {/* QR Code */}
-        <div className="bg-white rounded-2xl p-5 inline-block mb-5" ref={canvasRef}>
-          <QRCodeCanvas
-            value={virtual}
-            size={220}
-            level="H"
-            includeMargin={true}
-            bgColor="#ffffff"
-            fgColor="#1a1a2e"
-          />
+        <div className="bg-white rounded-2xl p-5 inline-block mb-5 shadow-qr-glow" ref={canvasRef}>
+          <QRCodeCanvas value={virtual} size={220} level="H" includeMargin bgColor="#ffffff" fgColor="#1a1a2e" />
         </div>
 
-        {/* Virtual Account Number */}
-        <div className="bg-gray-800/60 border border-gray-700 rounded-xl px-4 py-3 mb-4">
-          <p className="text-gray-400 text-xs font-medium mb-1 uppercase tracking-wider">Virtual Account</p>
+        {/* Account number */}
+        <div className="bg-surface-container border border-outline-variant rounded-xl px-4 py-3 mb-4">
+          <p className="text-on-surface-variant text-[10px] font-label-sm uppercase tracking-widest mb-2">Tài khoản ảo</p>
           <div className="flex items-center justify-center gap-3">
-            <span className="text-white font-mono text-lg font-bold tracking-wider">
-              {virtual}
-            </span>
-            <button
-              onClick={handleCopy}
-              className="text-brand-accent hover:text-white transition flex-shrink-0"
-              title="Copy"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M7 3a1 1 0 000 2h4a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H10a1 1 0 01-1-1H9a2 2 0 00-2 2v8a2 2 0 002 2h1a1 1 0 100-2H8a1 1 0 01-1-1V9a1 1 0 00-1-1H5z"/>
-              </svg>
+            <span className="text-primary font-label-md text-label-md font-bold font-mono tracking-wider">{virtual}</span>
+            <button onClick={handleCopy} className="text-primary hover:text-white transition cursor-pointer" title="Sao chép">
+              <span className="material-symbols-outlined text-lg">content_copy</span>
             </button>
           </div>
         </div>
 
-        {/* Download button */}
-        <button
-          onClick={handleDownload}
-          className="w-full btn-primary py-2.5 text-sm flex items-center justify-center gap-2 mb-3"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-          </svg>
-          Download QR Code
+        {/* Download */}
+        <button onClick={handleDownload} className="btn-primary w-full flex justify-center items-center gap-2 mb-3 cursor-pointer">
+          <span className="material-symbols-outlined">file_download</span>
+          Tải mã QR (PNG)
         </button>
 
-        <p className="text-gray-600 text-xs">Share this code to receive transfers</p>
+        <p className="text-on-surface-variant text-xs">Chia sẻ mã này để nhận tiền</p>
       </div>
     </div>
   );

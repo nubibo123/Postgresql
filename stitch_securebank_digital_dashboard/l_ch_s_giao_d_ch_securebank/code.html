@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-border-gradient {
+            border: 1px solid transparent;
+            background: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.65)) padding-box,
+                        linear-gradient(to bottom right, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02)) border-box;
+        }
+        body {
+            background-color: #020617;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.05) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.05) 0px, transparent 50%);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "glass-border": "rgba(255, 255, 255, 0.1)",
+                        "secondary-fixed-dim": "#89ceff",
+                        "secondary-container": "#00a2e6",
+                        "on-secondary-fixed": "#001e2f",
+                        "surface": "#0c1324",
+                        "tertiary-fixed-dim": "#d0bcff",
+                        "primary": "#adc6ff",
+                        "warning-glow": "#f59e0b",
+                        "surface-container-lowest": "#070d1f",
+                        "primary-fixed-dim": "#adc6ff",
+                        "inverse-on-surface": "#2a3043",
+                        "on-secondary": "#00344d",
+                        "on-primary-container": "#00285d",
+                        "inverse-surface": "#dce1fb",
+                        "surface-bright": "#33394c",
+                        "secondary": "#89ceff",
+                        "surface-container-high": "#23293c",
+                        "outline-variant": "#424754",
+                        "on-error-container": "#ffdad6",
+                        "surface-container-low": "#151b2d",
+                        "on-error": "#690005",
+                        "error-container": "#93000a",
+                        "surface-container": "#191f31",
+                        "success-glow": "#10b981",
+                        "tertiary": "#d0bcff",
+                        "on-background": "#dce1fb",
+                        "on-secondary-container": "#00344e",
+                        "on-tertiary-fixed-variant": "#5516be",
+                        "on-surface-variant": "#c2c6d6",
+                        "outline": "#8c909f",
+                        "tertiary-container": "#a078ff",
+                        "glass-surface": "rgba(15, 23, 42, 0.65)",
+                        "on-tertiary-container": "#340080",
+                        "primary-fixed": "#d8e2ff",
+                        "on-secondary-fixed-variant": "#004c6e",
+                        "obsidian-deep": "#020617",
+                        "error": "#ffb4ab",
+                        "inverse-primary": "#005ac2",
+                        "background": "#0c1324",
+                        "surface-container-highest": "#2e3447",
+                        "secondary-fixed": "#c9e6ff",
+                        "tertiary-fixed": "#e9ddff",
+                        "surface-variant": "#2e3447",
+                        "primary-container": "#4d8eff",
+                        "surface-tint": "#adc6ff",
+                        "on-primary-fixed-variant": "#004395",
+                        "on-surface": "#dce1fb",
+                        "surface-dim": "#0c1324",
+                        "on-primary": "#002e6a",
+                        "danger-glow": "#ef4444",
+                        "on-tertiary-fixed": "#23005c",
+                        "on-tertiary": "#3c0091",
+                        "on-primary-fixed": "#001a42"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "stack-lg": "32px",
+                        "unit": "4px",
+                        "container-max": "1280px",
+                        "stack-sm": "8px",
+                        "margin-desktop": "40px",
+                        "stack-md": "16px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Inter"],
+                        "label-sm": ["JetBrains Mono"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["JetBrains Mono"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="text-on-surface font-body-md bg-obsidian-deep min-h-screen flex">
+<!-- SideNavBar (Shared Component) -->
+<aside class="hidden lg:flex flex-col h-full py-stack-lg gap-stack-md fixed left-0 top-0 w-64 bg-glass-surface backdrop-blur-[20px] border-r border-glass-border shadow-2xl z-50">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" data-weight="fill">account_balance</span>
+</div>
+<div>
+<h1 class="font-display-lg text-headline-md font-bold text-primary">SecureBank</h1>
+<p class="text-[10px] text-on-surface-variant tracking-widest uppercase">Enterprise Wealth</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ease-in-out hover:pl-2 text-on-surface-variant hover:text-on-surface hover:bg-white/5" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ease-in-out hover:pl-2 text-on-surface-variant hover:text-on-surface hover:bg-white/5" href="#">
+<span class="material-symbols-outlined">account_balance</span>
+<span class="font-label-md text-label-md">Accounts</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ease-in-out hover:pl-2 text-on-surface-variant hover:text-on-surface hover:bg-white/5" href="#">
+<span class="material-symbols-outlined">swap_horiz</span>
+<span class="font-label-md text-label-md">Transfers</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ease-in-out hover:pl-2 bg-primary/10 text-primary border-r-2 border-primary" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-md text-label-md">History</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ease-in-out hover:pl-2 text-on-surface-variant hover:text-on-surface hover:bg-white/5" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-label-md">Loans</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ease-in-out hover:pl-2 text-on-surface-variant hover:text-on-surface hover:bg-white/5" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</nav>
+<div class="px-4 mt-auto space-y-2">
+<button class="w-full py-3 bg-primary text-on-primary font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-transform mb-6">
+                Quick Transfer
+            </button>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:text-on-surface text-sm" href="#">
+<span class="material-symbols-outlined">help</span>
+<span>Help Center</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:text-on-surface text-sm" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 lg:ml-64 min-h-screen relative">
+<!-- TopNavBar (Shared Component) -->
+<header class="flex justify-between items-center w-full px-margin-desktop h-16 sticky top-0 z-50 bg-glass-surface backdrop-blur-xl border-b border-glass-border shadow-sm">
+<div class="flex items-center lg:hidden">
+<span class="material-symbols-outlined text-primary cursor-pointer">menu</span>
+<span class="font-display-lg text-headline-md font-bold text-primary ml-4">SecureBank</span>
+</div>
+<div class="hidden lg:block">
+<h2 class="font-headline-md text-headline-md text-on-surface">Lịch sử giao dịch</h2>
+</div>
+<div class="flex items-center gap-stack-md">
+<div class="relative hidden md:block">
+<input class="bg-surface-container-lowest border-glass-border rounded-full py-2 pl-10 pr-4 text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all w-64 text-on-surface" placeholder="Tìm kiếm giao dịch..." type="text"/>
+<span class="material-symbols-outlined absolute left-3 top-2 text-on-surface-variant text-sm">search</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors">notifications</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors">apps</span>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest border border-glass-border overflow-hidden">
+<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a person with a friendly expression, set against a blurred modern office background. The lighting is soft and cinematic, emphasizing a polished and corporate feel consistent with high-end financial app branding." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCe6nh4pT6Z25c8efIPYmQBxy5RxCBSpzHyjarVH9k0mMwUUGFYcArOzuDZ2LRJsyotrPd3S2D2c7ZgH8atqgcBT2PxtC3hHgnkGV7-QhkKlhGA4HppWN3kfbx-67LpjbaIQFpYUHi3TjKsCmQYCIaNzO__4BU4tk8-eL39fA-xygIC_UHnM1E58O0Dg2IkuwBAi1_TQ_qjN3VdsYsXayDg1B8h6bO97TWpGboZAi0tDWnkP9EhrSsF8s5-BYpg49T8T22mJGXw-aeY"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Content Area -->
+<div class="p-margin-desktop space-y-stack-lg max-w-container-max mx-auto">
+<!-- Summary Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Spending Summary Card -->
+<div class="glass-card glass-border-gradient p-stack-md rounded-xl md:col-span-2">
+<div class="flex justify-between items-start mb-6">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Tổng chi tiêu tháng này</p>
+<h3 class="font-display-lg text-headline-lg text-primary mt-1">45.280.000 <span class="text-headline-md font-medium">VND</span></h3>
+</div>
+<div class="px-3 py-1 rounded-full bg-success-glow/10 text-success-glow border border-success-glow/20 text-xs font-bold">
+                            -12% so với tháng trước
+                        </div>
+</div>
+<!-- Simplified Visual Chart Area -->
+<div class="h-40 w-full relative flex items-end gap-2 px-2">
+<div class="flex-1 bg-primary/20 rounded-t-lg hover:bg-primary/40 transition-all h-[40%]"></div>
+<div class="flex-1 bg-primary/20 rounded-t-lg hover:bg-primary/40 transition-all h-[65%]"></div>
+<div class="flex-1 bg-primary/20 rounded-t-lg hover:bg-primary/40 transition-all h-[35%]"></div>
+<div class="flex-1 bg-primary/20 rounded-t-lg hover:bg-primary/40 transition-all h-[85%]"></div>
+<div class="flex-1 bg-primary/20 rounded-t-lg hover:bg-primary/40 transition-all h-[55%]"></div>
+<div class="flex-1 bg-primary/20 rounded-t-lg hover:bg-primary/40 transition-all h-[95%]"></div>
+<div class="flex-1 bg-primary/40 rounded-t-lg hover:bg-primary/60 transition-all h-[75%] border-t-2 border-primary"></div>
+<div class="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-10">
+<div class="border-t border-white w-full"></div>
+<div class="border-t border-white w-full"></div>
+<div class="border-t border-white w-full"></div>
+</div>
+</div>
+<div class="flex justify-between mt-4 px-2 text-[10px] text-on-surface-variant font-label-sm">
+<span>TUẦN 1</span><span>TUẦN 2</span><span>TUẦN 3</span><span>TUẦN 4</span><span>TUẦN 5</span>
+</div>
+</div>
+<!-- Active Loan Card -->
+<div class="glass-card glass-border-gradient p-stack-md rounded-xl flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-4">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Khoản vay hiện tại</p>
+<span class="material-symbols-outlined text-tertiary">payments</span>
+</div>
+<h4 class="font-headline-md text-headline-md text-on-surface">Vay mua nhà - SB2024</h4>
+<p class="font-label-md text-label-md text-tertiary mt-1">Dư nợ: 1.250.000.000 VND</p>
+</div>
+<div class="space-y-3 mt-6">
+<div class="w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
+<div class="bg-tertiary h-full w-[35%] shadow-[0_0_8px_rgba(208,188,255,0.4)]"></div>
+</div>
+<div class="flex justify-between text-[11px] text-on-surface-variant">
+<span>Đã trả: 35%</span>
+<span>Còn lại: 65%</span>
+</div>
+</div>
+<button class="w-full py-2 mt-4 glass-border-gradient rounded-lg text-sm font-medium hover:bg-white/5 transition-colors">Chi tiết khoản vay</button>
+</div>
+</div>
+<!-- Main Navigation & Filters -->
+<div class="flex flex-col md:flex-row gap-gutter items-center justify-between">
+<div class="flex bg-surface-container-low p-1 rounded-xl glass-border-gradient w-full md:w-auto">
+<button class="px-6 py-2 rounded-lg text-sm font-medium bg-primary/10 text-primary border border-primary/20">Tất cả giao dịch</button>
+<button class="px-6 py-2 rounded-lg text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">Lịch sử vay</button>
+</div>
+<div class="flex gap-stack-sm w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+<button class="flex items-center gap-2 px-4 py-2 glass-card rounded-lg text-xs font-medium hover:bg-white/5 whitespace-nowrap">
+<span class="material-symbols-outlined text-sm">calendar_today</span>
+                        30 ngày qua
+                    </button>
+<button class="flex items-center gap-2 px-4 py-2 glass-card rounded-lg text-xs font-medium hover:bg-white/5 whitespace-nowrap">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+                        Loại giao dịch
+                    </button>
+<button class="flex items-center gap-2 px-4 py-2 glass-card rounded-lg text-xs font-medium hover:bg-white/5 whitespace-nowrap">
+<span class="material-symbols-outlined text-sm">download</span>
+                        Xuất báo cáo
+                    </button>
+</div>
+</div>
+<!-- Transaction Table Container -->
+<div class="glass-card glass-border-gradient rounded-xl overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-high/50 border-b border-glass-border">
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase">Ngày</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase">Nội dung</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase">Danh mục</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase">Số tiền</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase text-center">Trạng thái</th>
+<th class="px-6 py-4"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-glass-border">
+<!-- Row 1: Active/Expanded -->
+<tr class="group hover:bg-white/5 transition-colors cursor-pointer bg-white/[0.02]">
+<td class="px-6 py-5 font-label-md text-label-md text-on-surface">24 Th10, 2023</td>
+<td class="px-6 py-5">
+<p class="font-medium text-on-surface">Thanh toán hóa đơn điện</p>
+<p class="text-xs text-on-surface-variant font-label-sm">SB-9923-4412-XX</p>
+</td>
+<td class="px-6 py-5">
+<span class="px-2 py-1 rounded bg-secondary/10 text-secondary text-[10px] font-bold uppercase tracking-wider">Tiện ích</span>
+</td>
+<td class="px-6 py-5 font-label-md text-label-md text-error">- 1.450.000 VND</td>
+<td class="px-6 py-5 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success-glow/10 text-success-glow text-[11px] font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-success-glow shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span>
+                                    Thành công
+                                </span>
+</td>
+<td class="px-6 py-5 text-right">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-transform rotate-180">expand_more</span>
+</td>
+</tr>
+<!-- Expansion Area for Row 1 -->
+<tr class="bg-surface-container-lowest/30">
+<td class="px-8 py-6" colspan="6">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="space-y-4">
+<h5 class="text-xs font-bold uppercase text-on-surface-variant tracking-widest">Chi tiết biên lai</h5>
+<div class="space-y-2 font-label-sm text-label-sm">
+<div class="flex justify-between">
+<span class="text-on-surface-variant">Mã giao dịch:</span>
+<span class="text-on-surface">TXN_99827110</span>
+</div>
+<div class="flex justify-between">
+<span class="text-on-surface-variant">Phương thức:</span>
+<span class="text-on-surface">Tài khoản chính</span>
+</div>
+<div class="flex justify-between">
+<span class="text-on-surface-variant">Phí giao dịch:</span>
+<span class="text-on-surface">0 VND</span>
+</div>
+</div>
+</div>
+<div class="md:col-span-2 glass-border-gradient rounded-xl p-4 bg-white/[0.02] flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center p-2">
+<img alt="QR Code Receipt" class="w-full h-full object-contain" data-alt="A clean, high-contrast QR code rendered on a white square background, framed by a dark glassmorphic border with blue luminescent glows. The style is technical and sleek, suggesting a secure digital receipt for a financial transaction." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAq6c5qMKZqf9g-V95bOU11l9PoADldY_9_zxD5W1OMymlosULI5L5CWgce0aRUvAXcglKkFeDsf1-culo23dJEzzR2gDJls_Ux0djHKIc5VXJHKzrLEA4xQD_S_QKGsCORwYjREq1ky3PdsHtCEbu4T9TeuLTJj8gRKjEbuMIkJl8G0MWH-WoZ8hs1i2NkWFUJ6sssStfvDIvJkPi_X2M7K3uSfdUYylzmRzJh9tkTTuODiGHAKxbArqGQbRkSmjSNv_SR12QfKTSU"/>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Biên lai điện tử</p>
+<p class="text-xs text-on-surface-variant">Quét để xác thực giao dịch này trên hệ thống liên ngân hàng.</p>
+</div>
+</div>
+<button class="px-4 py-2 bg-primary/20 text-primary border border-primary/30 rounded-lg text-xs font-bold hover:bg-primary/30 transition-all">TẢI XUỐNG PNG</button>
+</div>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="group hover:bg-white/5 transition-colors cursor-pointer">
+<td class="px-6 py-5 font-label-md text-label-md text-on-surface-variant">22 Th10, 2023</td>
+<td class="px-6 py-5">
+<p class="font-medium text-on-surface">Nhận tiền từ NGUYEN VAN A</p>
+<p class="text-xs text-on-surface-variant font-label-sm">SB-1102-5561-XX</p>
+</td>
+<td class="px-6 py-5">
+<span class="px-2 py-1 rounded bg-tertiary/10 text-tertiary text-[10px] font-bold uppercase tracking-wider">Thu nhập</span>
+</td>
+<td class="px-6 py-5 font-label-md text-label-md text-success-glow">+ 12.000.000 VND</td>
+<td class="px-6 py-5 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success-glow/10 text-success-glow text-[11px] font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-success-glow shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span>
+                                    Thành công
+                                </span>
+</td>
+<td class="px-6 py-5 text-right">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-transform">expand_more</span>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="group hover:bg-white/5 transition-colors cursor-pointer">
+<td class="px-6 py-5 font-label-md text-label-md text-on-surface-variant">20 Th10, 2023</td>
+<td class="px-6 py-5">
+<p class="font-medium text-on-surface">Đăng ký Netflix</p>
+<p class="text-xs text-on-surface-variant font-label-sm">Thanh toán định kỳ</p>
+</td>
+<td class="px-6 py-5">
+<span class="px-2 py-1 rounded bg-secondary/10 text-secondary text-[10px] font-bold uppercase tracking-wider">Giải trí</span>
+</td>
+<td class="px-6 py-5 font-label-md text-label-md text-error">- 260.000 VND</td>
+<td class="px-6 py-5 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-warning-glow/10 text-warning-glow text-[11px] font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-warning-glow shadow-[0_0_8px_rgba(245,158,11,0.6)]"></span>
+                                    Đang xử lý
+                                </span>
+</td>
+<td class="px-6 py-5 text-right">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-transform">expand_more</span>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="group hover:bg-white/5 transition-colors cursor-pointer">
+<td class="px-6 py-5 font-label-md text-label-md text-on-surface-variant">18 Th10, 2023</td>
+<td class="px-6 py-5">
+<p class="font-medium text-on-surface">Trả góp iPhone 15 Pro</p>
+<p class="text-xs text-on-surface-variant font-label-sm">Kỳ hạn 3/12</p>
+</td>
+<td class="px-6 py-5">
+<span class="px-2 py-1 rounded bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">Trả góp</span>
+</td>
+<td class="px-6 py-5 font-label-md text-label-md text-error">- 3.500.000 VND</td>
+<td class="px-6 py-5 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success-glow/10 text-success-glow text-[11px] font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-success-glow shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span>
+                                    Thành công
+                                </span>
+</td>
+<td class="px-6 py-5 text-right">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-transform">expand_more</span>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="px-6 py-4 flex items-center justify-between bg-surface-container-high/20 border-t border-glass-border">
+<p class="text-xs text-on-surface-variant">Hiển thị 10 trong số 154 giao dịch</p>
+<div class="flex gap-2">
+<button class="p-2 rounded-lg glass-border-gradient hover:bg-white/5 disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="p-2 rounded-lg glass-border-gradient hover:bg-white/5">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action Button (FAB) - Suppression Logic: Hidden on Transaction History per mandate -->
+<!-- But shown here for dashboard-like contexts as requested by "Book a Walk" equivalent in prompt logic -->
+<div class="fixed bottom-8 right-8 z-[60] lg:hidden">
+<button class="w-14 h-14 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</div>
+</body></html>

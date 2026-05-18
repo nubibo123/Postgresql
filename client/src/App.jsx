@@ -1,6 +1,6 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Navbar from './components/Navbar';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import Sidebar from './components/Sidebar';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -24,52 +24,37 @@ const AdminRoute = ({ children }) => {
   return user?.role === 'admin' ? children : <Navigate to="/" />;
 };
 
+const AppLayout = () => {
+  const token = localStorage.getItem('token');
+  return (
+    <>
+      {token && <Sidebar />}
+      <main className={`flex-1 min-h-screen bg-obsidian-deep ${token ? 'lg:ml-64 pt-16' : ''}`}>
+        <div className="max-w-container-max mx-auto p-margin-mobile md:p-margin-desktop space-y-stack-lg">
+          <Outlet />
+        </div>
+      </main>
+    </>
+  );
+};
+
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-brand-dark flex flex-col">
-        <Navbar />
-        <main className="flex-grow container mx-auto px-4 py-8">
-          <Routes>
+      <div className="min-h-screen bg-obsidian-deep flex flex-col">
+        <Routes>
+          <Route element={<AppLayout />}>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/" element={
-              <PrivateRoute>
-                <Dashboard />
-              </PrivateRoute>
-            } />
-            <Route path="/deposit" element={
-              <PrivateRoute>
-                <Deposit />
-              </PrivateRoute>
-            } />
-            <Route path="/withdraw" element={
-              <PrivateRoute>
-                <Withdraw />
-              </PrivateRoute>
-            } />
-            <Route path="/transfer" element={
-              <PrivateRoute>
-                <Transfer />
-              </PrivateRoute>
-            } />
-            <Route path="/history" element={
-              <PrivateRoute>
-                <History />
-              </PrivateRoute>
-            } />
-            <Route path="/loan" element={
-              <PrivateRoute>
-                <Loan />
-              </PrivateRoute>
-            } />
-            <Route path="/admin" element={
-              <AdminRoute>
-                <AdminDashboard />
-              </AdminRoute>
-            } />
-          </Routes>
-        </main>
+            <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+            <Route path="/deposit" element={<PrivateRoute><Deposit /></PrivateRoute>} />
+            <Route path="/withdraw" element={<PrivateRoute><Withdraw /></PrivateRoute>} />
+            <Route path="/transfer" element={<PrivateRoute><Transfer /></PrivateRoute>} />
+            <Route path="/history" element={<PrivateRoute><History /></PrivateRoute>} />
+            <Route path="/loan" element={<PrivateRoute><Loan /></PrivateRoute>} />
+            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+          </Route>
+        </Routes>
       </div>
     </Router>
   );

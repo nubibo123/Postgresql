@@ -40,41 +40,59 @@ DATABASE (PostgreSQL)                   → :5432, DB: securebank
 ```
 
 ### Client
-- Entry: `client/src/main.jsx`. Routing in `App.jsx`. Pages in `client/src/pages/` (Login, Register, Dashboard, Deposit, Withdraw, Transfer, History, Loan, AdminDashboard). Components in `client/src/components/` (Navbar, CashFlowChart with recharts, QRCodeModal).
+- Entry: `client/src/main.jsx`. Routing in `App.jsx` with `PrivateRoute` (auth guard) and `AdminRoute` (role guard).
+- Pages: `client/src/pages/` — Login, Register, Dashboard, Deposit, Withdraw, Transfer, History, Loan, AdminDashboard
+- Components: `client/src/components/` — Navbar, CashFlowChart (recharts), QRCodeModal
+- Utils: `client/src/utils/formatters.js` — `formatVirtualAccount`, `formatAccountNumber`
 
 ### Server
 - Entry: `server/src/index.js`. Layers:
   - `config/db.js` – `pg.Pool` using credentials from `server/.env`.
-  - `middlewares/authMiddleware.js` – `protect` (JWT verification, injects `req.user`) and `admin` (role guard).
-  - `controllers/authController.js` – register (creates user + account in one transaction) and login.
+  - `middlewares/authMiddleware.js` – `protect` (JWT) and `admin` (role guard).
+  - `controllers/authController.js` – register (user + account in one transaction) and login.
   - `controllers/accountController.js` – account listing, deposit/withdraw/transfer (delegates to stored procedures).
   - `controllers/loanController.js` – loans: list, apply, update status, delete.
-  - `controllers/adminController.js` – admin-only endpoints (users, audit logs, loans).
-  - Routes in `server/src/routes/`: authRoutes, accountRoutes, adminRoutes, loanRoutes.
-- Auth endpoints: `POST /api/auth/register`, `POST /api/auth/login` → returns `{ id, username, full_name, role, token }`.
-- Account endpoints require `Authorization: Bearer <token>` and enforce ownership via `WHERE user_id = $1` before calling stored procedures.
+  - `controllers/adminController.js` – admin endpoints (users with lock/unlock, audit logs, all loans).
+  - Routes: `server/src/routes/` — authRoutes, accountRoutes, adminRoutes, loanRoutes
+- Auth: `POST /api/auth/register`, `POST /api/auth/login` → `{ id, username, full_name, role, token }`
 - Error middleware in `server/src/middlewares/errorMiddleware.js` produces `{ message }` responses.
 
 ### Database
-**Tables:** `users`, `accounts`, `transactions`, `transaction_types`, `roles`, `user_roles`, `audit_logs`, `login_history`, `loans`.
+**Tables:** `users`, `accounts`, `transactions`, `transaction_types`, `roles`, `user_roles`, `audit_logs`, `login_history`, `loans`
 
 **Stored procedures** (`database/03_functions_triggers.sql`):
-- `sp_transfer_money` – ACID transfer with `FOR UPDATE` row lock. **Deadlock prevention:** locks accounts in UUID sort order (always lock the smaller UUID first, regardless of debit/credit direction).
+> **Note:** Procedures do NOT use `COMMIT`/`ROLLBACK` inside. PostgreSQL auto-commits when `CALL` completes. Validation gates use `RETURN` only. Exception handler uses `RAISE` (PostgreSQL auto-rollbacks).
+- `sp_transfer_money` – ACID transfer, `FOR UPDATE` row lock. Deadlock prevention: locks smaller UUID first.
 - `sp_deposit_money` – credit an account.
 - `sp_withdraw_money` – debit an account after balance check.
-- `fn_audit_log_trigger()` – fires on INSERT/UPDATE/DELETE of `accounts`, `users`, `transactions`. Reads `app.current_user_id` from session config (set by the backend via `PERFORM set_config(...)`).
+- `fn_audit_log_trigger()` – fires on INSERT/UPDATE/DELETE of `accounts`, `users`, `transactions`, `loans`. Reads `app.current_user_id` via `set_config(...)`.
 
-**RBAC:** default roles are `admin` (full) and `customer` (transactional).
+**RBAC:** roles `admin` (full) and `customer` (transactional).
 
-**View:** `vw_user_transaction_summary` – denormalised per-account totals (transactions count, total received/sent).
+**View:** `vw_user_transaction_summary` – per-account totals (transactions count, total received/sent).
 
-### Security Stack (depth-first)
+### Security Stack
 1. JWT (30-day expiry) for API auth.
 2. bcrypt password hashing (salt rounds 10).
 3. Application-layer ownership checks (`WHERE user_id = $1`) on all account data.
-4. Row-level security policies defined in `02_security.sql` (enforced when `app.current_user_id` is set via `SET LOCAL`).
-5. `bank_app_user` PostgreSQL role with only CRUD on tables and `EXECUTE` on procedures — direct table writes are blocked.
-6. `FOR UPDATE` row locks in stored procedures block concurrent double-spend.
+4. Row-level security policies in `02_security.sql`.
+5. `bank_app_user` PostgreSQL role — only CRUD on tables, `EXECUTE` on procedures.
+6. `FOR UPDATE` row locks block concurrent double-spend.
+7. Audit trigger logs all changes to `audit_logs`.
+
+### Features Implemented
+| Feature | Location |
+|---|---|
+| Register / Login (JWT + bcrypt) | `authController`, authRoutes |
+| Dashboard with account cards | `Dashboard.jsx` |
+| Deposit / Withdraw / Transfer | `accountController`, stored procedures |
+| QR Code generation (SB-XXXX-XXXX-XX) | `QRCodeModal.jsx` + `QRCodeCanvas` |
+| Download QR as PNG | `QRCodeModal.jsx` |
+| Scan QR to transfer | `Transfer.jsx` + `jsqr` library |
+| Loan apply / list / delete | `Loan.jsx` + `loanController` |
+| History: Transactions + Loans tabs | `History.jsx` |
+| Admin: Users, Audit Logs, Loans | `AdminDashboard.jsx` + `adminController` |
+| Lock/Unlock user account | `adminController.updateUserStatus` |
 
 ## Entry Points
 - `server/src/index.js`
@@ -82,4 +100,5 @@ DATABASE (PostgreSQL)                   → :5432, DB: securebank
 - `client/src/App.jsx` (frontend routing)
 - `database/01_schema.sql`
 - `database/03_functions_triggers.sql`
-- `docs/architecture.md` (Vietnamese; full ERD, API table, data-flow diagram, startup commands)
+- `docs/architecture.md` (Vietnamese; ERD, API table, data-flow)
+- `docs/TRIGGERS_FUNCTIONS.md` (stored procedures & triggers deep-dive)

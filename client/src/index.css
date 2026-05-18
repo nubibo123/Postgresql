@@ -1,21 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    @apply bg-brand-dark text-brand-text font-sans antialiased;
+    @apply bg-obsidian-deep text-on-surface antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+
+  * {
+    @apply border-glass-border;
   }
 }
 
 @layer components {
+  /* Glass Card — Dark Glassmorphism */
+  .glass-card {
+    @apply bg-glass-surface backdrop-blur-xl border border-glass-border rounded-xl;
+  }
+
+  /* Primary Button */
   .btn-primary {
-    @apply bg-brand-accent hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-200 ease-in-out;
+    @apply bg-primary text-on-primary font-label-md font-medium py-3 px-6 rounded-xl
+           shadow-primary-glow hover:opacity-90 active:scale-95 transition-all duration-200;
   }
+
+  /* Ghost Glass Button */
+  .btn-ghost {
+    @apply glass-card font-label-md font-medium py-2.5 px-5 rounded-xl
+           hover:border-primary/50 active:scale-95 transition-all duration-200;
+  }
+
+  /* Danger Button */
+  .btn-danger {
+    @apply bg-danger-glow/10 text-danger-glow border border-danger-glow/30 font-label-md
+           py-2.5 px-5 rounded-xl hover:bg-danger-glow/20 active:scale-95 transition-all duration-200;
+  }
+
+  /* Input Field — Glass style */
   .input-field {
-    @apply w-full bg-brand-dark border border-gray-700 rounded py-2 px-3 text-brand-text leading-tight focus:outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition duration-200;
+    @apply w-full bg-surface-container border border-outline-variant rounded-xl py-3 px-4
+           text-on-surface placeholder-on-surface-variant
+           focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30
+           transition-all duration-200 font-label-md;
   }
+
+  /* Card wrapper */
   .card {
-    @apply bg-brand-card rounded-xl shadow-lg border border-gray-800 p-6;
+    @apply glass-card p-6;
+  }
+
+  /* Material Symbols reset */
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    user-select: none;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-obsidian-deep;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-surface-container-high rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-outline-variant;
   }
 }

@@ -1,89 +1,78 @@
-import React, { useMemo } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import React from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
-const CashFlowChart = ({ transactions, account }) => {
-  const chartData = useMemo(() => {
-    if (!transactions || transactions.length === 0 || !account) return [];
+const formatVND = (n) =>
+  n >= 1_000_000
+    ? (n / 1_000_000).toFixed(1) + 'M'
+    : n >= 1_000
+    ? (n / 1_000).toFixed(0) + 'K'
+    : n.toFixed(0);
 
-    let currentBalance = parseFloat(account.balance);
-    
-    // Create a copy of transactions to modify and sort
-    // Assuming transactions are passed in from newest to oldest
-    const dataWithBalances = transactions.map(tx => {
-      const isDebit = tx.from_account === account.account_number;
-      const amount = parseFloat(tx.amount);
-      
-      const balanceAfter = currentBalance;
-      const balanceBefore = isDebit ? currentBalance + amount : currentBalance - amount;
-      
-      // Update currentBalance for the next iteration (older transaction)
-      currentBalance = balanceBefore;
-
-      return {
-        date: new Date(tx.created_at).toLocaleDateString(),
-        fullDate: new Date(tx.created_at).toLocaleString(),
-        balance: balanceAfter,
-        amount: isDebit ? -amount : amount,
-        type: tx.type,
-      };
-    });
-
-    // Reverse to display from oldest to newest on the chart
-    return dataWithBalances.reverse();
-  }, [transactions, account]);
-
-  if (!chartData || chartData.length === 0) {
-    return null;
-  }
-
-  const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-gray-800 border border-gray-700 p-3 rounded shadow-lg">
-          <p className="text-gray-300 text-sm mb-1">{data.fullDate}</p>
-          <p className="text-white font-bold">
-            Balance: ${data.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-          </p>
-          <p className={`text-sm ${data.amount < 0 ? 'text-white' : 'text-green-400'}`}>
-            Flow: {data.amount < 0 ? '-' : '+'}${Math.abs(data.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
-
+const CustomTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
   return (
-    <div className="w-full h-64 mb-8">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
-          <XAxis 
-            dataKey="date" 
-            stroke="#9ca3af" 
-            fontSize={12}
-            tickLine={false}
-            axisLine={false}
-          />
-          <YAxis 
-            stroke="#9ca3af" 
-            fontSize={12}
-            tickLine={false}
-            axisLine={false}
-            tickFormatter={(value) => `$${value}`}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Line 
-            type="monotone" 
-            dataKey="balance" 
-            stroke="#00f2fe" 
-            strokeWidth={3}
-            dot={{ r: 4, fill: '#1f2937', stroke: '#00f2fe', strokeWidth: 2 }}
-            activeDot={{ r: 6, fill: '#00f2fe' }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+    <div className="glass-card px-3 py-2 rounded-lg text-center">
+      <p className="font-label-sm text-label-sm text-on-surface-variant">{label}</p>
+      {payload.map((p, i) => (
+        <p key={i} className={`font-label-md text-label-md font-bold ${i === 0 ? 'text-primary' : 'text-secondary/60'}`}>
+          {p.value.toLocaleString('vi-VN')}đ
+        </p>
+      ))}
+    </div>
+  );
+};
+
+const CashFlowChart = ({ monthlyData }) => {
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-stack-lg">
+        <h2 className="font-headline-md text-headline-md text-on-surface">Dòng tiền thực tế</h2>
+        <select className="bg-surface-container border-none text-on-surface-variant font-label-sm text-label-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary/30 cursor-pointer">
+          <option>6 tháng qua</option>
+          <option>1 năm qua</option>
+        </select>
+      </div>
+      <div className="h-64 w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={monthlyData} barGap={2} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+            <XAxis
+              dataKey="month"
+              tick={{ fill: '#c2c6d6', fontSize: 11, fontFamily: 'JetBrains Mono' }}
+              tickLine={false}
+              axisLine={false}
+            />
+            <YAxis
+              tick={{ fill: '#c2c6d6', fontSize: 11, fontFamily: 'JetBrains Mono' }}
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={formatVND}
+              width={48}
+            />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(173,198,255,0.05)' }} />
+            <Bar dataKey="income" radius={[4, 4, 0, 0]} maxBarSize={20}>
+              {monthlyData?.map((entry, i) => (
+                <Cell key={i} fill="rgba(173,198,255,0.25)" />
+              ))}
+            </Bar>
+            <Bar dataKey="actual" radius={[4, 4, 0, 0]} maxBarSize={20}>
+              {monthlyData?.map((entry, i) => (
+                <Cell key={i} fill="#adc6ff" />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="mt-stack-md pt-stack-sm border-t border-glass-border flex justify-center gap-8">
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-primary"></div>
+          <span className="font-label-sm text-label-sm text-on-surface-variant">Thu nhập</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-primary/25"></div>
+          <span className="font-label-sm text-label-sm text-on-surface-variant">Chi tiêu</span>
+        </div>
+      </div>
     </div>
   );
 };

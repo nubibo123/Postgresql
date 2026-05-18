@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "glass-border": "rgba(255, 255, 255, 0.1)",
+                        "secondary-fixed-dim": "#89ceff",
+                        "secondary-container": "#00a2e6",
+                        "on-secondary-fixed": "#001e2f",
+                        "surface": "#0c1324",
+                        "tertiary-fixed-dim": "#d0bcff",
+                        "primary": "#adc6ff",
+                        "warning-glow": "#f59e0b",
+                        "surface-container-lowest": "#070d1f",
+                        "primary-fixed-dim": "#adc6ff",
+                        "inverse-on-surface": "#2a3043",
+                        "on-secondary": "#00344d",
+                        "on-primary-container": "#00285d",
+                        "inverse-surface": "#dce1fb",
+                        "surface-bright": "#33394c",
+                        "secondary": "#89ceff",
+                        "surface-container-high": "#23293c",
+                        "outline-variant": "#424754",
+                        "on-error-container": "#ffdad6",
+                        "surface-container-low": "#151b2d",
+                        "on-error": "#690005",
+                        "error-container": "#93000a",
+                        "surface-container": "#191f31",
+                        "success-glow": "#10b981",
+                        "tertiary": "#d0bcff",
+                        "on-background": "#dce1fb",
+                        "on-secondary-container": "#00344e",
+                        "on-tertiary-fixed-variant": "#5516be",
+                        "on-surface-variant": "#c2c6d6",
+                        "outline": "#8c909f",
+                        "tertiary-container": "#a078ff",
+                        "glass-surface": "rgba(15, 23, 42, 0.65)",
+                        "on-tertiary-container": "#340080",
+                        "primary-fixed": "#d8e2ff",
+                        "on-secondary-fixed-variant": "#004c6e",
+                        "obsidian-deep": "#020617",
+                        "error": "#ffb4ab",
+                        "inverse-primary": "#005ac2",
+                        "background": "#0c1324",
+                        "surface-container-highest": "#2e3447",
+                        "secondary-fixed": "#c9e6ff",
+                        "tertiary-fixed": "#e9ddff",
+                        "surface-variant": "#2e3447",
+                        "primary-container": "#4d8eff",
+                        "surface-tint": "#adc6ff",
+                        "on-primary-fixed-variant": "#004395",
+                        "on-surface": "#dce1fb",
+                        "surface-dim": "#0c1324",
+                        "on-primary": "#002e6a",
+                        "danger-glow": "#ef4444",
+                        "on-tertiary-fixed": "#23005c",
+                        "on-tertiary": "#3c0091",
+                        "on-primary-fixed": "#001a42"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "stack-lg": "32px",
+                        "unit": "4px",
+                        "container-max": "1280px",
+                        "stack-sm": "8px",
+                        "margin-desktop": "40px",
+                        "stack-md": "16px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Inter"],
+                        "label-sm": ["JetBrains Mono"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["JetBrains Mono"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-sm": ["12px", {"lineHeight": "1.4", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "1.4", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #020617; /* obsidian-deep */
+            color: #dce1fb; /* on-surface */
+        }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(15, 23, 42, 0.75);
+        }
+        .input-inset {
+            background: rgba(7, 13, 31, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+<!-- Sidebar Navigation -->
+<aside class="hidden lg:flex flex-col h-full py-stack-lg gap-stack-md fixed left-0 top-0 h-full w-64 bg-glass-surface backdrop-blur-[20px] border-r border-glass-border shadow-2xl z-50">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary" data-icon="account_balance">account_balance</span>
+</div>
+<div>
+<h1 class="font-display-lg text-headline-md font-bold text-primary">SecureBank</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Enterprise Wealth</p>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-2">
+<a class="flex items-center gap-4 px-4 py-3 rounded-xl text-on-surface-variant hover:text-on-surface hover:bg-white/5 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-xl text-on-surface-variant hover:text-on-surface hover:bg-white/5 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance">account_balance</span>
+<span class="font-label-md text-label-md">Accounts</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-xl bg-primary/10 text-primary border-r-2 border-primary transition-all duration-200 ease-in-out pl-6" href="#">
+<span class="material-symbols-outlined" data-icon="swap_horiz">swap_horiz</span>
+<span class="font-label-md text-label-md">Transfers</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-xl text-on-surface-variant hover:text-on-surface hover:bg-white/5 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-label-md text-label-md">History</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-xl text-on-surface-variant hover:text-on-surface hover:bg-white/5 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-label-md text-label-md">Loans</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-xl text-on-surface-variant hover:text-on-surface hover:bg-white/5 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</nav>
+<div class="px-4 mt-auto space-y-2 border-t border-glass-border pt-6">
+<a class="flex items-center gap-4 px-4 py-3 rounded-xl text-on-surface-variant hover:text-on-surface hover:bg-white/5" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-label-md text-label-md">Help Center</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-xl text-on-surface-variant hover:text-danger-glow hover:bg-white/5" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="lg:ml-64 min-h-screen">
+<!-- Top Navigation -->
+<header class="flex justify-between items-center w-full px-margin-desktop h-16 sticky top-0 z-40 bg-glass-surface backdrop-blur-xl border-b border-glass-border shadow-sm">
+<div class="flex items-center gap-4">
+<h2 class="font-display-lg text-headline-md font-bold text-primary">Chuyển Tiền</h2>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex items-center bg-surface-container-lowest px-4 py-2 rounded-full border border-glass-border">
+<span class="material-symbols-outlined text-outline" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md placeholder:text-outline-variant ml-2 w-48" placeholder="Tìm kiếm giao dịch..." type="text"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors" data-icon="apps">apps</span>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest overflow-hidden border border-primary">
+<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="A professional close-up portrait of a tech executive against a dark, blurred architectural background. The person has a friendly but confident expression, with soft cinematic lighting highlighting their features. The overall tone is sophisticated, matching the obsidian-deep and primary-blue color scheme of the SecureBank brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiMX5PgdpT8zGfk1Bw1ul7Kqmz-TZ5tb1mFHuJCffUB7XAu8D1MAefiBfzvHn99TBeX9rpw6Ndp-_WWFzLjTkcenYyIabsdTeB6DnjkSheqUjHS0VXPmLzQKliNoBjTcOSuV3MRbVRvIyXQ6HRE4sUC1eRPrY9C0o6g6SfNUnQJAIAjGj2BHwXh6k4MiYQKPtOX90Ob1ES3HcG1CJY4EYm4oZQDbCa8bMv_LmMqF9e6X9Xn3aKZAtDD06bPhBpZiAr-ZzTmZnTdGr1"/>
+</div>
+</div>
+</div>
+</header>
+<div class="max-w-container-max mx-auto p-margin-desktop space-y-gutter">
+<!-- Hero Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Left Column: Form Section -->
+<div class="lg:col-span-8 space-y-gutter">
+<!-- Transfer Form Card -->
+<section class="glass-card rounded-xl p-stack-lg shadow-2xl relative overflow-hidden">
+<div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+<div class="flex items-center justify-between mb-8">
+<div>
+<h3 class="font-headline-lg text-headline-lg text-on-surface">Thông tin chuyển khoản</h3>
+<p class="text-on-surface-variant font-body-md mt-1">Vui lòng nhập chi tiết người nhận và số tiền cần chuyển.</p>
+</div>
+<div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" data-icon="send">send</span>
+</div>
+</div>
+<form class="space-y-stack-md">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-stack-md">
+<div class="space-y-2">
+<label class="block font-label-sm text-label-sm text-outline uppercase tracking-wider">Số tài khoản người nhận</label>
+<div class="relative">
+<input class="w-full input-inset rounded-lg py-4 px-4 font-label-md text-label-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all outline-none" placeholder="SB-XXXX-XXXX-XX" type="text"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-primary hover:text-secondary transition-colors" type="button">
+<span class="material-symbols-outlined" data-icon="contact_page">contact_page</span>
+</button>
+</div>
+</div>
+<div class="space-y-2">
+<label class="block font-label-sm text-label-sm text-outline uppercase tracking-wider">Ngân hàng thụ hưởng</label>
+<select class="w-full input-inset rounded-lg py-4 px-4 font-label-md text-label-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all outline-none appearance-none">
+<option>SecureBank Enterprise</option>
+<option>Vietcombank</option>
+<option>Techcombank</option>
+<option>BIDV</option>
+</select>
+</div>
+</div>
+<div class="space-y-2">
+<label class="block font-label-sm text-label-sm text-outline uppercase tracking-wider">Số tiền chuyển (VND)</label>
+<div class="relative">
+<input class="w-full input-inset rounded-lg py-6 px-12 font-headline-lg text-headline-lg text-primary text-center focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all outline-none placeholder:text-surface-container-highest" placeholder="0" type="text"/>
+<span class="absolute left-6 top-1/2 -translate-y-1/2 font-headline-md text-headline-md text-outline">₫</span>
+</div>
+<div class="flex justify-center gap-2 mt-4">
+<button class="px-4 py-1.5 rounded-full bg-white/5 border border-glass-border hover:bg-primary/20 text-label-sm font-label-sm transition-colors" type="button">+ 500k</button>
+<button class="px-4 py-1.5 rounded-full bg-white/5 border border-glass-border hover:bg-primary/20 text-label-sm font-label-sm transition-colors" type="button">+ 1M</button>
+<button class="px-4 py-1.5 rounded-full bg-white/5 border border-glass-border hover:bg-primary/20 text-label-sm font-label-sm transition-colors" type="button">+ 5M</button>
+<button class="px-4 py-1.5 rounded-full bg-white/5 border border-glass-border hover:bg-primary/20 text-label-sm font-label-sm transition-colors" type="button">+ 10M</button>
+</div>
+</div>
+<div class="space-y-2 pt-4">
+<label class="block font-label-sm text-label-sm text-outline uppercase tracking-wider">Lời nhắn</label>
+<textarea class="w-full input-inset rounded-lg py-3 px-4 font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all outline-none resize-none" placeholder="Nội dung chuyển khoản (Tối đa 140 ký tự)" rows="3"></textarea>
+</div>
+<div class="pt-6">
+<button class="w-full py-5 bg-primary hover:bg-primary-container text-on-primary font-bold text-lg rounded-xl shadow-[0_0_20px_rgba(173,198,255,0.3)] hover:shadow-[0_0_30px_rgba(173,198,255,0.5)] active:scale-95 transition-all flex items-center justify-center gap-3" type="submit">
+<span class="material-symbols-outlined" data-icon="lock">lock</span>
+                                    Xác Nhận Chuyển Tiền
+                                </button>
+<p class="text-center text-label-sm text-outline-variant mt-4 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[14px]" data-icon="verified_user">verified_user</span>
+                                    Mọi giao dịch được mã hóa và bảo mật tuyệt đối bởi SecureBank.
+                                </p>
+</div>
+</form>
+</section>
+<!-- Frequent Recipients List -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<h4 class="font-headline-md text-headline-md text-on-surface">Người nhận thường xuyên</h4>
+<button class="text-primary font-label-md text-label-md hover:underline">Xem tất cả</button>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4">
+<!-- Recipient 1 -->
+<button class="glass-card p-4 rounded-xl flex flex-col items-center gap-3 transition-transform hover:-translate-y-1">
+<div class="w-12 h-12 rounded-full border-2 border-primary/30 p-0.5">
+<img alt="Avatar Recipient" class="w-full h-full rounded-full object-cover" data-alt="A portrait of a young Vietnamese professional in a stylish dark suit, set against an abstract backdrop of glowing financial data points. The lighting is focused and warm, creating a sense of trust and personability. The image uses deep blues and soft golds to maintain the premium glassmorphic aesthetic of the banking app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpIjXpBSFxRsIV6xwiCHFGO83T18o1lGFcuMBV2rFDL-1KWf1fkZJ4noBsJ0xo5L5_WnNNBJ_HXwkbL-AiLA6ZLzALfdtJhRa5538tPt7HjFWAsLSM1WjF53ueALNlWPIGVXj1q98hW-3bxB15fzHywn0rBNT3uUL9j-h2YsjximM_IBBBRqhA6Rp0u8Dq1MGiDFGSZcHofNT_OUozxd0FO_iX4ljmKBP--nXG18Era4WBYsFiRFicVHS9rJoz4I-oGjfNrw47bn3c"/>
+</div>
+<span class="font-label-md text-label-md text-on-surface text-center line-clamp-1">Anh Tuấn</span>
+</button>
+<!-- Recipient 2 -->
+<button class="glass-card p-4 rounded-xl flex flex-col items-center gap-3 transition-transform hover:-translate-y-1">
+<div class="w-12 h-12 rounded-full border-2 border-secondary/30 p-0.5">
+<img alt="Avatar Recipient" class="w-full h-full rounded-full object-cover" data-alt="A professional headshot of a woman with a confident smile, wearing minimalist silver jewelry. The background is a deep navy gradient with subtle glass-like refractions. High-tech, clean lighting gives the image a modern fintech vibe, emphasizing reliability and sophisticated banking services." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIgmnq7WCaccG6FeIncgcOb9_LnhjILAKr3mVJ7a3zSCHCdo1dJMwRfpriB92g_YLjCaQba4CLaA2QOx33Rho2jU6op9OYxDmXh54qi1UMWiHKCL2UGquJMnutYY0ojHMgxPljX1LLAv5ja8vKriOb5qkJo1D_EU6i1ZbQ1I8Y9Mo29jqy3dKLPI4RVlAXkBWjsOlI4wME3Hkcwxd5keJdPvP2DgjpgpD4InqKdvFrFYSXcpj7mQy5LsTE-BVnPRSdGmghnrWojJhy"/>
+</div>
+<span class="font-label-md text-label-md text-on-surface text-center line-clamp-1">Lan Phương</span>
+</button>
+<!-- Recipient 3 -->
+<button class="glass-card p-4 rounded-xl flex flex-col items-center gap-3 transition-transform hover:-translate-y-1">
+<div class="w-12 h-12 rounded-full border-2 border-primary/30 p-0.5">
+<img alt="Avatar Recipient" class="w-full h-full rounded-full object-cover" data-alt="A portrait of a creative professional in a dark turtleneck, looking thoughtfully into the camera. The setting is a blurred ultra-modern office with glowing neon accents in blue and violet. The lighting is crisp and cool, aligning with the dark glassmorphic design system of the application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdTdpfvWLsLIbO2zyQQS7ZG1nCw-fnWPFbLgS1SbtriTzQ9Dyb37Xu1h7Toi3sSBSHOWPIWbBuJSJAf07CRhGXYNd7iawVBRRzqwoeLDM-74xUCwk1gpK7Dc_J2d1rR4qFpdqUj0q07A7SALgWoykjTbxUkiSocXqkBE2gPdPmQJduJvrimFYyQVTZTQrLZmfaVnYra-MCtkE0pEbdTm3pqPTk7eoZzqD00oxYc9JGjooFK1_lIRtLhlB1czKUEDwwppb4-5XnH3WH"/>
+</div>
+<span class="font-label-md text-label-md text-on-surface text-center line-clamp-1">Minh Đức</span>
+</button>
+<!-- Recipient 4 -->
+<button class="glass-card p-4 rounded-xl flex flex-col items-center gap-3 transition-transform hover:-translate-y-1">
+<div class="w-12 h-12 rounded-full border-2 border-secondary/30 p-0.5">
+<img alt="Avatar Recipient" class="w-full h-full rounded-full object-cover" data-alt="A close-up portrait of an elegant woman with short hair, against a backdrop of dark obsidian glass with light reflecting off the edges. The visual style is highly polished, utilizing a color palette of deep blacks and luminescent blue highlights to convey a high-end financial experience." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWCRG-LcyEIK89Jbxh1B6bfMBfbgRRhmT-L7uhJ8ZuezKY0Z5gOwpsXbzSW7scMyMfA1BOsxAMdGOzoH-_EMGIwII6kmKCwSqlx2JW0mjxzpqozefOJfbgWlbNBaOamdAlXoDJdCb_bw2tWwH4Tt0ZyvGFvYFtKBx6jVrhjI0cq08OvKcytvfuiT79xYeE_ZjPPG95Dn48lN6VQVYP5Qq_bt_02xchbSO9zuBClVQoiBAdZFGTMUpGJv_jFt3DtNAEeoTwFWIx0KBI"/>
+</div>
+<span class="font-label-md text-label-md text-on-surface text-center line-clamp-1">Bích Ngọc</span>
+</button>
+<!-- Add New -->
+<button class="bg-white/5 border border-dashed border-glass-border p-4 rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-white/10 transition-colors">
+<div class="w-12 h-12 rounded-full flex items-center justify-center text-outline-variant">
+<span class="material-symbols-outlined text-3xl" data-icon="add_circle">add_circle</span>
+</div>
+<span class="font-label-md text-label-md text-outline-variant text-center">Thêm mới</span>
+</button>
+</div>
+</section>
+</div>
+<!-- Right Column: Contextual Actions -->
+<div class="lg:col-span-4 space-y-gutter">
+<!-- Scan QR Section -->
+<div class="glass-card rounded-xl p-stack-lg border-2 border-primary/20 shadow-[0_0_40px_rgba(173,198,255,0.1)] flex flex-col items-center text-center">
+<div class="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-6">
+<span class="material-symbols-outlined text-4xl" data-icon="qr_code_scanner">qr_code_scanner</span>
+</div>
+<h4 class="font-headline-md text-headline-md text-on-surface mb-2">Quét Mã QR</h4>
+<p class="text-on-surface-variant font-body-md mb-8">Chuyển tiền nhanh chóng bằng cách quét mã VietQR của người nhận.</p>
+<div class="relative group cursor-pointer w-full max-w-[200px] aspect-square bg-white p-4 rounded-2xl mb-8 overflow-hidden">
+<div class="absolute inset-0 bg-primary/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 backdrop-blur-sm">
+<div class="flex flex-col items-center text-primary">
+<span class="material-symbols-outlined text-4xl" data-icon="photo_camera">photo_camera</span>
+<span class="font-label-md text-label-md font-bold mt-2">MỞ CAMERA</span>
+</div>
+</div>
+<!-- Static QR placeholder for visual structure -->
+<div class="w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-100 to-slate-200 flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-400 text-6xl" data-icon="qr_code_2">qr_code_2</span>
+</div>
+</div>
+<button class="w-full py-4 glass-card border-primary/40 hover:bg-primary/10 text-primary font-label-md text-label-md rounded-xl transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" data-icon="upload_file">upload_file</span>
+                            Tải ảnh mã QR
+                        </button>
+</div>
+<!-- Transaction Summary Hint -->
+<div class="glass-card rounded-xl p-stack-lg overflow-hidden relative">
+<div class="absolute -right-4 -bottom-4 opacity-10">
+<span class="material-symbols-outlined text-[120px]" data-icon="account_balance_wallet">account_balance_wallet</span>
+</div>
+<h4 class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-4">Hạn mức khả dụng</h4>
+<div class="flex items-end gap-2 mb-1">
+<span class="font-display-lg text-headline-lg text-secondary">245.000.000</span>
+<span class="font-headline-md text-headline-md text-secondary pb-1">₫</span>
+</div>
+<p class="text-on-surface-variant font-label-md text-label-md">Tài khoản: SB-9921-0032-11</p>
+<div class="mt-8 pt-6 border-t border-glass-border space-y-4">
+<div class="flex justify-between items-center text-body-md">
+<span class="text-on-surface-variant">Hạn mức ngày</span>
+<span class="text-on-surface font-label-md">500.000.000 ₫</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-lowest rounded-full overflow-hidden">
+<div class="w-[49%] h-full bg-secondary shadow-[0_0_10px_rgba(137,206,255,0.5)]"></div>
+</div>
+<p class="text-label-sm text-outline-variant">Bạn đã sử dụng 49% hạn mức trong ngày.</p>
+</div>
+</div>
+<!-- Support Card -->
+<div class="bg-gradient-to-br from-primary-container/20 to-secondary-container/20 border border-primary/20 rounded-xl p-stack-md flex gap-4 items-start">
+<div class="w-10 h-10 shrink-0 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="headset_mic">headset_mic</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface font-bold">Cần hỗ trợ?</p>
+<p class="text-label-sm text-on-surface-variant mt-1 leading-relaxed">Đội ngũ chuyên gia tài chính của chúng tôi luôn sẵn sàng 24/7 để hỗ trợ giao dịch của bạn.</p>
+<a class="inline-block mt-3 text-primary text-label-md font-bold hover:underline" href="#">Liên hệ ngay</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-glass-surface backdrop-blur-xl border-t border-glass-border flex items-center justify-around px-4 z-50">
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="text-[10px] font-label-sm">Trang chủ</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined" data-icon="swap_horiz">swap_horiz</span>
+<span class="text-[10px] font-label-sm">Chuyển tiền</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="qr_code_scanner">qr_code_scanner</span>
+<span class="text-[10px] font-label-sm">Quét mã</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="text-[10px] font-label-sm">Lịch sử</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="text-[10px] font-label-sm">Cá nhân</span>
+</button>
+</nav>
+</body></html>

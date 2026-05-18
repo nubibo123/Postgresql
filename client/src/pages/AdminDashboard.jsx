@@ -16,78 +16,35 @@ const AdminDashboard = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get('http://localhost:5000/api/admin/users', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const { data } = await axios.get('http://localhost:5000/api/admin/users', { headers: { Authorization: `Bearer ${token}` } });
       setUsers(data);
-    } catch (err) {
-      setError('Failed to load users');
-    } finally {
-      setLoading(false);
-    }
+    } catch (e) { setError('Khong tai duoc danh sach user'); } finally { setLoading(false); }
   };
 
   const fetchAuditLogs = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get('http://localhost:5000/api/admin/audit-logs', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const { data } = await axios.get('http://localhost:5000/api/admin/audit-logs', { headers: { Authorization: `Bearer ${token}` } });
       setAuditLogs(data);
-    } catch (err) {
-      setError('Failed to load audit logs');
-    } finally {
-      setLoading(false);
-    }
+    } catch (e) { setError('Khong tai duoc audit logs'); } finally { setLoading(false); }
   };
 
   const fetchLoans = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get('http://localhost:5000/api/admin/loans', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const { data } = await axios.get('http://localhost:5000/api/admin/loans', { headers: { Authorization: `Bearer ${token}` } });
       setAllLoans(data);
-    } catch (err) {
-      setError('Failed to load loans');
-    } finally {
-      setLoading(false);
-    }
+    } catch (e) { setError('Khong tai duoc danh sach khoan vay'); } finally { setLoading(false); }
   };
 
-  const handleToggleUserStatus = async (userId, currentStatus) => {
+  const handleToggleStatus = async (userId, currentStatus) => {
     const newStatus = currentStatus === 'active' ? 'locked' : 'active';
-    if (!confirm(`Set user to "${newStatus}"?`)) return;
+    if (!confirm(`Đặt trạng thái "${newStatus}" cho user này?`)) return;
     try {
-      await axios.put(`http://localhost:5000/api/admin/users/${userId}/status`,
-        { status: newStatus },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await axios.put(`http://localhost:5000/api/admin/users/${userId}/status`, { status: newStatus }, { headers: { Authorization: `Bearer ${token}` } });
       fetchUsers();
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed to update status');
-    }
+    } catch (err) { alert(err.response?.data?.message || 'Cap nhat that bai'); }
   };
-
-  const getStatusBadge = (status) => {
-    const s = {
-      active: 'bg-green-900/50 text-green-400 border-green-800',
-      locked: 'bg-red-900/50 text-red-400 border-red-800',
-      active_loan: 'bg-green-900/50 text-green-400 border-green-800',
-      closed: 'bg-gray-700/50 text-gray-400 border-gray-600',
-      defaulted: 'bg-red-900/50 text-red-400 border-red-800',
-    };
-    return s[status] || s.closed;
-  };
-
-  const getActionBadge = (action) => {
-    const colors = { INSERT: 'text-green-400', UPDATE: 'text-yellow-400', DELETE: 'text-red-400' };
-    return <span className={`font-medium ${colors[action] || ''}`}>{action}</span>;
-  };
-
-  const totalBalance = users.reduce((acc, u) => {
-    return acc;
-  }, 0);
 
   useEffect(() => {
     if (activeTab === 'users') fetchUsers();
@@ -95,52 +52,54 @@ const AdminDashboard = () => {
     else if (activeTab === 'loans') fetchLoans();
   }, [activeTab]);
 
+  const getStatusBadge = (status) => {
+    if (status === 'active') return 'bg-success-glow/10 text-success-glow border border-success-glow/30';
+    if (status === 'locked') return 'bg-danger-glow/10 text-danger-glow border border-danger-glow/30';
+    if (status === 'completed') return 'bg-success-glow/10 text-success-glow border border-success-glow/30';
+    if (status === 'closed') return 'bg-white/5 text-on-surface-variant border border-outline-variant';
+    if (status === 'defaulted') return 'bg-danger-glow/10 text-danger-glow border border-danger-glow/30';
+    return '';
+  };
+
+  const getActionBadge = (action) => {
+    if (action === 'INSERT') return <span className="text-success-glow font-label-md">INSERT</span>;
+    if (action === 'UPDATE') return <span className="text-warning-glow font-label-md">UPDATE</span>;
+    if (action === 'DELETE') return <span className="text-danger-glow font-label-md">DELETE</span>;
+    return <span className="text-on-surface-variant font-label-md">{action}</span>;
+  };
+
+  const totalPrincipal = allLoans.reduce((s, l) => s + parseFloat(l.principal || 0), 0);
+
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-5xl">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
-          <p className="text-gray-400 text-sm mt-1">Welcome, {user?.full_name} ({user?.role})</p>
-        </div>
+      <div className="mb-stack-lg">
+        <h1 className="font-headline-lg text-headline-lg text-on-surface">Quản trị hệ thống</h1>
+        <p className="font-body-md text-on-surface-variant mt-1">Xin chào, {user?.full_name} ({user?.role})</p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div className="card py-5 px-6 text-center">
-          <p className="text-gray-400 text-sm font-medium">Total Users</p>
-          <p className="text-3xl font-bold text-white mt-1">{users.length || '—'}</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-stack-lg">
+        <div className="glass-card py-5 px-6 text-center rounded-xl">
+          <p className="text-on-surface-variant text-label-md mb-1">Tổng Users</p>
+          <p className="font-headline-md text-headline-md text-on-surface">{users.length || '—'}</p>
         </div>
-        <div className="card py-5 px-6 text-center">
-          <p className="text-gray-400 text-sm font-medium">Total Loans</p>
-          <p className="text-3xl font-bold text-brand-accent mt-1">{allLoans.length || '—'}</p>
+        <div className="glass-card py-5 px-6 text-center rounded-xl">
+          <p className="text-on-surface-variant text-label-md mb-1">Tổng Khoản Vay</p>
+          <p className="font-headline-md text-headline-md text-primary">{allLoans.length || '—'}</p>
         </div>
-        <div className="card py-5 px-6 text-center">
-          <p className="text-gray-400 text-sm font-medium">Loans Total Principal</p>
-          <p className="text-3xl font-bold text-white mt-1">
-            {allLoans.length
-              ? '$' + allLoans.reduce((s, l) => s + parseFloat(l.principal), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })
-              : '—'}
-          </p>
+        <div className="glass-card py-5 px-6 text-center rounded-xl">
+          <p className="text-on-surface-variant text-label-md mb-1">Tổng Tiền Vay</p>
+          <p className="font-headline-md text-headline-md text-on-surface">{totalPrincipal > 0 ? '$' + totalPrincipal.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '—'}</p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 border-b border-gray-800 pb-0">
-        {[
-          { key: 'users', label: 'Users' },
-          { key: 'logs', label: 'Audit Logs' },
-          { key: 'loans', label: 'All Loans' },
-        ].map(tab => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`px-5 py-2.5 text-sm font-medium rounded-t border-b-2 transition ${
-              activeTab === tab.key
-                ? 'border-brand-accent text-white'
-                : 'border-transparent text-gray-400 hover:text-white'
-            }`}
-          >
+      <div className="flex gap-1 mb-6 border-b border-glass-border pb-0">
+        {[{ key: 'users', label: 'Users', icon: 'group' }, { key: 'logs', label: 'Audit Logs', icon: 'history' }, { key: 'loans', label: 'Khoản Vay', icon: 'payments' }].map(tab => (
+          <button key={tab.key} onClick={() => setActiveTab(tab.key)} className={`px-5 py-2.5 text-label-md font-label-md rounded-t border-b-2 transition flex items-center gap-2 ${
+            activeTab === tab.key ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant hover:text-on-surface'}`}>
+            <span className="material-symbols-outlined text-lg">{tab.icon}</span>
             {tab.label}
           </button>
         ))}
@@ -148,54 +107,37 @@ const AdminDashboard = () => {
 
       {/* Users Tab */}
       {activeTab === 'users' && (
-        <div className="card overflow-x-auto">
-          {error && <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded mb-4 text-sm">{error}</div>}
-          {loading ? (
-            <div className="text-center text-gray-400 py-10">Loading...</div>
-          ) : users.length === 0 ? (
-            <div className="text-center text-gray-400 py-10">No users found.</div>
+        <div className="glass-card rounded-xl overflow-hidden">
+          {error && <div className="bg-danger-glow/10 border border-danger-glow/30 text-danger-glow px-4 py-3 rounded-xl mb-4 text-sm">{error}</div>}
+          {loading ? <div className="text-center text-on-surface-variant py-10">Đang tải...</div> : users.length === 0 ? (
+            <div className="text-center text-on-surface-variant py-10">Chưa có user nào.</div>
           ) : (
             <table className="w-full text-left">
-              <thead>
-                <tr className="border-b border-gray-800 text-gray-400 text-sm">
-                  <th className="py-3 px-4 font-medium">Username</th>
-                  <th className="py-3 px-4 font-medium">Full Name</th>
-                  <th className="py-3 px-4 font-medium">Role</th>
-                  <th className="py-3 px-4 font-medium">Status</th>
-                  <th className="py-3 px-4 font-medium">Created</th>
-                  <th className="py-3 px-4 font-medium">Action</th>
-                </tr>
-              </thead>
-              <tbody>
+              <thead><tr className="border-b border-glass-border text-on-surface-variant text-label-sm">
+                <th className="px-stack-md py-3 font-medium">Username</th>
+                <th className="px-stack-md py-3 font-medium">Họ tên</th>
+                <th className="px-stack-md py-3 font-medium">Role</th>
+                <th className="px-stack-md py-3 font-medium">Trạng thái</th>
+                <th className="px-stack-md py-3 font-medium">Ngày tạo</th>
+                <th className="px-stack-md py-3 font-medium text-right">Thao tác</th>
+              </tr></thead>
+              <tbody className="divide-y divide-glass-border">
                 {users.map(u => (
-                  <tr key={u.id} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition text-white">
-                    <td className="py-3 px-4 font-mono text-sm">{u.username}</td>
-                    <td className="py-3 px-4">{u.full_name}</td>
-                    <td className="py-3 px-4">
-                      <span className={`px-2 py-0.5 text-xs rounded border ${
-                        u.role === 'admin' ? 'bg-purple-900/50 text-purple-300 border-purple-800' : 'bg-blue-900/50 text-blue-300 border-blue-800'
-                      }`}>
+                  <tr key={u.id} className="hover:bg-white/5 transition text-on-surface">
+                    <td className="px-stack-md py-4 font-mono text-sm">{u.username}</td>
+                    <td className="px-stack-md py-4 font-label-md">{u.full_name}</td>
+                    <td className="px-stack-md py-4">
+                      <span className={`px-2 py-0.5 text-[10px] rounded border ${
+                        u.role === 'admin' ? 'bg-tertiary-container/20 text-tertiary border-tertiary-container' : 'bg-primary/10 text-primary border-primary'}`}>
                         {u.role.toUpperCase()}
                       </span>
                     </td>
-                    <td className="py-3 px-4">
-                      <span className={`px-2 py-1 text-xs rounded-full border ${getStatusBadge(u.status)}`}>
-                        {u.status.toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-400">
-                      {new Date(u.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="py-3 px-4">
-                      <button
-                        onClick={() => handleToggleUserStatus(u.id, u.status)}
-                        className={`text-sm px-3 py-1 rounded border transition ${
-                          u.status === 'active'
-                            ? 'border-red-700 text-red-400 hover:bg-red-900/30'
-                            : 'border-green-700 text-green-400 hover:bg-green-900/30'
-                        }`}
-                      >
-                        {u.status === 'active' ? 'Lock' : 'Unlock'}
+                    <td className="px-stack-md py-4"><span className={`px-2 py-1 text-[10px] rounded-full border ${getStatusBadge(u.status)}`}>{u.status.toUpperCase()}</span></td>
+                    <td className="px-stack-md py-4 text-label-sm text-on-surface-variant">{new Date(u.created_at).toLocaleDateString()}</td>
+                    <td className="px-stack-md py-4 text-right">
+                      <button onClick={() => handleToggleStatus(u.id, u.status)} className={`px-3 py-1 text-label-sm rounded-lg border transition cursor-pointer ${
+                        u.status === 'active' ? 'border-danger-glow/30 text-danger-glow hover:bg-danger-glow/10' : 'border-success-glow/30 text-success-glow hover:bg-success-glow/10'}`}>
+                        {u.status === 'active' ? 'Khóa' : 'Mở khóa'}
                       </button>
                     </td>
                   </tr>
@@ -208,33 +150,24 @@ const AdminDashboard = () => {
 
       {/* Audit Logs Tab */}
       {activeTab === 'logs' && (
-        <div className="card overflow-x-auto">
-          {error && <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded mb-4 text-sm">{error}</div>}
-          {loading ? (
-            <div className="text-center text-gray-400 py-10">Loading...</div>
-          ) : auditLogs.length === 0 ? (
-            <div className="text-center text-gray-400 py-10">No audit logs found.</div>
+        <div className="glass-card rounded-xl overflow-hidden">
+          {loading ? <div className="text-center text-on-surface-variant py-10">Đang tải...</div> : auditLogs.length === 0 ? (
+            <div className="text-center text-on-surface-variant py-10">Chưa có audit log nào.</div>
           ) : (
             <table className="w-full text-left">
-              <thead>
-                <tr className="border-b border-gray-800 text-gray-400 text-sm">
-                  <th className="py-3 px-4 font-medium">Time</th>
-                  <th className="py-3 px-4 font-medium">Action</th>
-                  <th className="py-3 px-4 font-medium">Table</th>
-                  <th className="py-3 px-4 font-medium">By</th>
-                </tr>
-              </thead>
-              <tbody>
+              <thead><tr className="border-b border-glass-border text-on-surface-variant text-label-sm">
+                <th className="px-stack-md py-3 font-medium">Thời gian</th>
+                <th className="px-stack-md py-3 font-medium">Hành động</th>
+                <th className="px-stack-md py-3 font-medium">Bảng</th>
+                <th className="px-stack-md py-3 font-medium">Người thực hiện</th>
+              </tr></thead>
+              <tbody className="divide-y divide-glass-border">
                 {auditLogs.map(log => (
-                  <tr key={log.id} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition text-white">
-                    <td className="py-3 px-4 text-sm text-gray-300">
-                      {new Date(log.changed_at).toLocaleString()}
-                    </td>
-                    <td className="py-3 px-4">{getActionBadge(log.action)}</td>
-                    <td className="py-3 px-4">
-                      <span className="bg-gray-800 px-2 py-0.5 rounded text-xs border border-gray-700">{log.table_name}</span>
-                    </td>
-                    <td className="py-3 px-4 text-gray-400 text-sm">{log.changed_by || '—'}</td>
+                  <tr key={log.id} className="hover:bg-white/5 transition text-on-surface">
+                    <td className="px-stack-md py-4 text-label-sm text-on-surface-variant">{new Date(log.changed_at).toLocaleString()}</td>
+                    <td className="px-stack-md py-4">{getActionBadge(log.action)}</td>
+                    <td className="px-stack-md py-4"><span className="bg-surface-container px-2 py-0.5 rounded text-[10px] border border-outline-variant">{log.table_name}</span></td>
+                    <td className="px-stack-md py-4 text-on-surface-variant text-sm">{log.changed_by || '—'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -243,39 +176,30 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {/* All Loans Tab */}
+      {/* Loans Tab */}
       {activeTab === 'loans' && (
-        <div className="card overflow-x-auto">
-          {error && <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded mb-4 text-sm">{error}</div>}
-          {loading ? (
-            <div className="text-center text-gray-400 py-10">Loading...</div>
-          ) : allLoans.length === 0 ? (
-            <div className="text-center text-gray-400 py-10">No loans found.</div>
+        <div className="glass-card rounded-xl overflow-hidden">
+          {loading ? <div className="text-center text-on-surface-variant py-10">Đang tải...</div> : allLoans.length === 0 ? (
+            <div className="text-center text-on-surface-variant py-10">Chưa có khoản vay nào.</div>
           ) : (
             <table className="w-full text-left">
-              <thead>
-                <tr className="border-b border-gray-800 text-gray-400 text-sm">
-                  <th className="py-3 px-4 font-medium">Account</th>
-                  <th className="py-3 px-4 font-medium">User</th>
-                  <th className="py-3 px-4 font-medium">Principal</th>
-                  <th className="py-3 px-4 font-medium">Interest</th>
-                  <th className="py-3 px-4 font-medium">Term</th>
-                  <th className="py-3 px-4 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody>
+              <thead><tr className="border-b border-glass-border text-on-surface-variant text-label-sm">
+                <th className="px-stack-md py-3 font-medium">User</th>
+                <th className="px-stack-md py-3 font-medium">Tài khoản</th>
+                <th className="px-stack-md py-3 font-medium text-right">Số tiền</th>
+                <th className="px-stack-md py-3 font-medium">Lãi suất</th>
+                <th className="px-stack-md py-3 font-medium">Kỳ hạn</th>
+                <th className="px-stack-md py-3 font-medium">Trạng thái</th>
+              </tr></thead>
+              <tbody className="divide-y divide-glass-border">
                 {allLoans.map(loan => (
-                  <tr key={loan.id} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition text-white">
-                    <td className="py-3 px-4 font-mono text-sm">{loan.account_number}</td>
-                    <td className="py-3 px-4">{loan.username}</td>
-                    <td className="py-3 px-4">${parseFloat(loan.principal).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                    <td className="py-3 px-4">{parseFloat(loan.interest_rate).toFixed(2)}%</td>
-                    <td className="py-3 px-4">{loan.term_months} mo</td>
-                    <td className="py-3 px-4">
-                      <span className={`px-2 py-1 text-xs rounded-full border ${getStatusBadge(loan.status)}`}>
-                        {loan.status.toUpperCase()}
-                      </span>
-                    </td>
+                  <tr key={loan.id} className="hover:bg-white/5 transition text-on-surface">
+                    <td className="px-stack-md py-4 text-label-md">{loan.username}</td>
+                    <td className="px-stack-md py-4 font-mono text-sm text-on-surface-variant">{loan.account_number}</td>
+                    <td className="px-stack-md py-4 text-right font-label-md text-primary">${parseFloat(loan.principal).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                    <td className="px-stack-md py-4 text-label-md">{parseFloat(loan.interest_rate).toFixed(2)}%</td>
+                    <td className="px-stack-md py-4 text-label-md">{loan.term_months} tháng</td>
+                    <td className="px-stack-md py-4"><span className={`px-2 py-1 text-[10px] rounded-full border ${getStatusBadge(loan.status)}`}>{loan.status.toUpperCase()}</span></td>
                   </tr>
                 ))}
               </tbody>
