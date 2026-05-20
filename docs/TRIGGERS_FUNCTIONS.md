@@ -330,155 +330,160 @@
     | Audit context được set ở đâu? | Trong procedure qua `set_config('app.current_user_id', p_user_id)` |
     | Backend cần quản lý transaction không? | **Không** — chỉ cần `pool.query('CALL sp_...')` |
 
-    ---
+---
 
-    ## RLS Policies — 5 bảng mới (v2)
+## V2 — 5 bảng mới (bổ sung)
 
-    ### Tổng quan
+### Tổng quan
 
-    Row-Level Security (RLS) được enable trên 5 bảng v2. Policy dùng chung pattern: `WHERE user_id = current_setting('app.current_user_id')::UUID`. Backend phải SET context trước khi query.
+| Bảng | Mục đích |
+|------|----------|
+| `notifications` | Thông báo cho user (transaction, loan, security) |
+| `sessions` | Quản lý phiên đăng nhập |
+| `cards` | Thẻ ngân hàng (debit/virtual) |
+| `bill_payments` | Thanh toán hóa đơn |
+| `scheduled_payments` | Giao dịch định kỳ |
 
-    ```sql
-    ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
-    ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
-    ALTER TABLE cards ENABLE ROW LEVEL SECURITY;
-    ALTER TABLE bill_payments ENABLE ROW LEVEL SECURITY;
-    ALTER TABLE scheduled_payments ENABLE ROW LEVEL SECURITY;
-    ```
+### RLS Policies
 
-    ### Quy tắc chung
+```sql
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE cards ENABLE ROW LEVEL SECURITY;
+ALTER TABLE bill_payments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE scheduled_payments ENABLE ROW LEVEL SECURITY;
 
-    - **Notifications, Sessions, Cards, Bill Payments, Scheduled Payments:** User chỉ thấy data thuộc về mình (`user_id = app.current_user_id`).
-    - **Bank App Role (`bank_app_user`):** Không BYPASSRLS, luôn đi qua policies.
-    - **Backend responsibility:** Mỗi request phải `SET LOCAL app.current_user_id = req.user.id` trước khi query data của user đó.
+-- Policy pattern chung: user_id = app.current_user_id
+CREATE POLICY notification_owner_policy ON notifications
+    FOR ALL TO bank_app_user
+    USING (user_id = current_setting('app.current_user_id')::UUID);
 
-    ### Chi tiết từng bảng
+CREATE POLICY session_owner_policy ON sessions
+    FOR ALL TO bank_app_user
+    USING (user_id = current_setting('app.current_user_id')::UUID);
 
-    #### `notifications` — Thông báo
+CREATE POLICY card_owner_policy ON cards
+    FOR ALL TO bank_app_user
+    USING (user_id = current_setting('app.current_user_id')::UUID);
 
-    ```sql
-    CREATE POLICY notification_owner_policy ON notifications
-        FOR ALL TO bank_app_user
-        USING (user_id = current_setting('app.current_user_id')::UUID);
-    ```
+CREATE POLICY bill_payment_owner_policy ON bill_payments
+    FOR ALL TO bank_app_user
+    USING (user_id = current_setting('app.current_user_id')::UUID);
 
-    Kiểm soát:
-    - Ai tạo notification → trigger `fn_audit_log_trigger` gắn vào `trg_audit_notifications`.
-    - User đọc thông báo (is_read) → UPDATE query được phép.
-    - User xóa thông báo → DELETE query được phép.
+CREATE POLICY scheduled_payment_owner_policy ON scheduled_payments
+    FOR ALL TO bank_app_user
+    USING (user_id = current_setting('app.current_user_id')::UUID);
+```
 
-    **Controller pattern:**
-    ```javascript
-    // notificationController.js
-    const getNotifications = async (req, res) => {
-        const result = await pool.query(
-            'SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT 50',
-            [req.user.id]
-        );
-        res.json(result.rows);
-    };
-    ```
+### Audit Triggers cho 5 bảng mới
 
-    #### `sessions` — Quản lý phiên đăng nhập
+```sql
+-- notifications
+CREATE TRIGGER trg_audit_notifications
+AFTER INSERT OR UPDATE OR DELETE ON notifications
+FOR EACH ROW EXECUTE FUNCTION fn_audit_log_trigger();
 
-    ```sql
-    CREATE POLICY session_owner_policy ON sessions
-        FOR ALL TO bank_app_user
-        USING (user_id = current_setting('app.current_user_id')::UUID);
-    ```
+-- sessions
+CREATE TRIGGER trg_audit_sessions
+AFTER INSERT OR UPDATE OR DELETE ON sessions
+FOR EACH ROW EXECUTE FUNCTION fn_audit_log_trigger();
 
-    Kiểm soát:
-    - Session chỉ được truy cập bởi chính user sở hữu.
-    - Backend có thể revoke session bằng `UPDATE sessions SET is_active = FALSE`.
-    - Không dùng cho login endpoint (không có JWT yet).
+-- cards
+CREATE TRIGGER trg_audit_cards
+AFTER INSERT OR UPDATE OR DELETE ON cards
+FOR EACH ROW EXECUTE FUNCTION fn_audit_log_trigger();
 
-    #### `cards` — Thẻ ngân hàng
+-- bill_payments
+CREATE TRIGGER trg_audit_bill_payments
+AFTER INSERT OR UPDATE OR DELETE ON bill_payments
+FOR EACH ROW EXECUTE FUNCTION fn_audit_log_trigger();
 
-    ```sql
-    CREATE POLICY card_owner_policy ON cards
-        FOR ALL TO bank_app_user
-        USING (user_id = current_setting('app.current_user_id')::UUID);
-    ```
+-- scheduled_payments
+CREATE TRIGGER trg_audit_scheduled_payments
+AFTER INSERT OR UPDATE OR DELETE ON scheduled_payments
+FOR EACH ROW EXECUTE FUNCTION fn_audit_log_trigger();
+```
 
-    Kiểm soát:
-    - User không thấy card của user khác.
-    - Block/unblock card → UPDATE query.
-    - Cancel card → UPDATE status = 'cancelled' (soft delete).
+### Pattern Controller — Notifications
 
-    **Card number security:**
-    ```sql
-    -- Lưu HASH, không lưu plain text
-    -- last_four: chỉ 4 số cuối hiển thị
-    card_number_hash VARCHAR(255) NOT NULL  -- bcrypt hash
-    last_four VARCHAR(4) NOT NULL            -- chỉ để hiển thị
-    ```
+```javascript
+// notificationController.js
+const getNotifications = async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT 50',
+      [req.user.id]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
 
-    #### `bill_payments` — Thanh toán hóa đơn
+const markAsRead = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query(
+      'UPDATE notifications SET is_read = TRUE WHERE id = $1 AND user_id = $2',
+      [id, req.user.id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Notification not found' });
+    }
+    res.json({ message: 'Notification marked as read' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+```
 
-    ```sql
-    CREATE POLICY bill_payment_owner_policy ON bill_payments
-        FOR ALL TO bank_app_user
-        USING (user_id = current_setting('app.current_user_id')::UUID);
-    ```
+### Pattern Controller — Cards
 
-    Kiểm soát:
-    - Người dùng chỉ thấy lịch sử thanh toán của mình.
-    - `payBill` endpoint: INSERT vào `bill_payments` + UPDATE account balance trong 1 transaction.
-    - Có kiểm tra số dư trước khi thanh toán.
+```javascript
+// cardController.js
+const createCard = async (req, res) => {
+  try {
+    const { accountId, cardType } = req.body;
+    
+    // Verify account ownership
+    const accCheck = await pool.query(
+      'SELECT id FROM accounts WHERE id = $1 AND user_id = $2',
+      [accountId, req.user.id]
+    );
+    if (accCheck.rows.length === 0) {
+      return res.status(404).json({ message: 'Account not found' });
+    }
 
-    #### `scheduled_payments` — Giao dịch định kỳ
+    // Generate card hash
+    const cardHash = crypto.randomBytes(4).toString('hex').toUpperCase();
+    const lastFour = cardHash.slice(0, 4);
+    const now = new Date();
 
-    ```sql
-    CREATE POLICY scheduled_payment_owner_policy ON scheduled_payments
-        FOR ALL TO bank_app_user
-        USING (user_id = current_setting('app.current_user_id')::UUID);
-    ```
+    const result = await pool.query(
+      `INSERT INTO cards (user_id, account_id, card_number_hash, last_four,
+                          card_type, expiry_month, expiry_year, daily_limit)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING id, account_id, last_four, card_type, status`,
+      [req.user.id, accountId, cardHash, lastFour, cardType,
+       now.getMonth() + 1, now.getFullYear() + 3, 50000000]
+    );
 
-    Kiểm soát:
-    - User tạo giao dịch định kỳ: INSERT (kiểm tra ownership qua `from_account_id`).
-    - Update/cancel: UPDATE status = 'active' / 'paused' / 'cancelled'.
-    - Không dùng hard DELETE — luôn soft delete để giữ lịch sử.
+    res.status(201).json({ message: 'Card created', card: result.rows[0] });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+```
 
-    ---
+### Tóm tắt V2
 
-    ## Các Trigger mới (v2)
-
-    ```sql
-    -- notifications: INSERT + UPDATE + DELETE
-    CREATE TRIGGER trg_audit_notifications
-    AFTER INSERT OR UPDATE OR DELETE ON notifications
-    FOR EACH ROW EXECUTE FUNCTION fn_audit_log_trigger();
-
-    -- sessions: INSERT + UPDATE + DELETE
-    CREATE TRIGGER trg_audit_sessions
-    AFTER INSERT OR UPDATE OR DELETE ON sessions
-    FOR EACH ROW EXECUTE FUNCTION fn_audit_log_trigger();
-
-    -- cards: INSERT + UPDATE + DELETE
-    CREATE TRIGGER trg_audit_cards
-    AFTER INSERT OR UPDATE OR DELETE ON cards
-    FOR EACH ROW EXECUTE FUNCTION fn_audit_log_trigger();
-
-    -- bill_payments: INSERT + UPDATE + DELETE
-    CREATE TRIGGER trg_audit_bill_payments
-    AFTER INSERT OR UPDATE OR DELETE ON bill_payments
-    FOR EACH ROW EXECUTE FUNCTION fn_audit_log_trigger();
-
-    -- scheduled_payments: INSERT + UPDATE + DELETE
-    CREATE TRIGGER trg_audit_scheduled_payments
-    AFTER INSERT OR UPDATE OR DELETE ON scheduled_payments
-    FOR EACH ROW EXECUTE FUNCTION fn_audit_log_trigger();
-    ```
-
-    ---
-
-    ## Tóm tắt nhanh (bổ sung v2)
-
-    | Câu hỏi | Trả lời |
-    |---------|---------|
-    | 5 bảng v2 có RLS không? | **Có** — tất cả đều enable RLS |
-    | RLS policy check gì? | `user_id = app.current_user_id` |
-    | Backend phải làm gì trước query? | `SET LOCAL app.current_user_id = req.user.id` |
-    | Cards lưu số thẻ thế nào? | Hash bcrypt, chỉ lưu `last_four` để hiển thị |
-    | Scheduled payments xóa bằng cách nào? | Soft delete — `UPDATE status = 'cancelled'` |
-    | Bill payments cần kiểm tra gì? | Số dư account trước khi thanh toán |
+| Câu hỏi | Trả lời |
+|---------|---------|
+| 5 bảng mới có RLS không? | **Có** — tất cả đều enable RLS với policy `user_id = app.current_user_id` |
+| Audit trigger cho 5 bảng? | **Có** — `trg_audit_notifications`, `sessions`, `cards`, `bill_payments`, `scheduled_payments` |
+| Cards lưu số thế nào? | **Hash bcrypt** — không lưu plain text, chỉ hiển thị `last_four` |
+| Scheduled payments xóa kiểu gì? | **Soft delete** — `UPDATE status = 'cancelled'`, không hard delete |
+| Bill payments cần check gì? | **Số dư** trước khi thanh toán |
